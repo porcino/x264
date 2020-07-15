@@ -141,7 +141,14 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
             int dc = h->pixf.sad[size]( fdec, FDEC_STRIDE, (pixel*)x264_zero, 0 ) >> 1;
             satd = abs(h->pixf.satd[size]( fdec, FDEC_STRIDE, (pixel*)x264_zero, 0 ) - dc - cached_satd( h, size, x, y ));
         }
-        satd = (satd * h->mb.i_psy_rd * h->mb.i_psy_rd_lambda + 128) >> 8;
+        if( h->param.analyse.b_dynamic_psy )
+        {
+            satd = (int32_t)(satd * h->mb.i_psy_rd * 300 / (pow((x264_ratecontrol_qp( h ) + h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] - 20) / 3, 4) + 300) * h->mb.i_psy_rd_lambda + 128) >> 8;
+        }
+        else
+        {
+            satd = (satd * h->mb.i_psy_rd * h->mb.i_psy_rd_lambda + 128) >> 8;
+        }
     }
     return h->pixf.ssd[size](fenc, FENC_STRIDE, fdec, FDEC_STRIDE) + satd;
 }
@@ -711,16 +718,17 @@ int quant_trellis_cabac( x264_t *h, dctcoef *dct,
     memcpy( &level_state1, cabac_state+8, sizeof(uint16_t) );
 #define TRELLIS_ARGS unquant_mf, zigzag, lambda2, last_nnz, orig_coefs, quant_coefs, dct,\
                      cabac_state_sig, cabac_state_last, level_state0, level_state1
+    float dynamic_psy_ratio = 300 / (pow((x264_ratecontrol_qp( h ) - 20) / 3, 4) + 300);
     if( num_coefs == 16 && !dc )
         if( b_chroma || !h->mb.i_psy_trellis )
             return h->quantf.trellis_cabac_4x4( TRELLIS_ARGS, b_ac );
         else
-            return h->quantf.trellis_cabac_4x4_psy( TRELLIS_ARGS, b_ac, h->mb.pic.fenc_dct4[idx&15], h->mb.i_psy_trellis );
+            return h->quantf.trellis_cabac_4x4_psy( TRELLIS_ARGS, b_ac, h->mb.pic.fenc_dct4[idx&15], h->mb.i_psy_trellis * dynamic_psy_ratio );
     else if( num_coefs == 64 && !dc )
         if( b_chroma || !h->mb.i_psy_trellis )
             return h->quantf.trellis_cabac_8x8( TRELLIS_ARGS, b_interlaced );
         else
-            return h->quantf.trellis_cabac_8x8_psy( TRELLIS_ARGS, b_interlaced, h->mb.pic.fenc_dct8[idx&3], h->mb.i_psy_trellis);
+            return h->quantf.trellis_cabac_8x8_psy( TRELLIS_ARGS, b_interlaced, h->mb.pic.fenc_dct8[idx&3], h->mb.i_psy_trellis * dynamic_psy_ratio);
     else if( num_coefs == 8 && dc )
         return h->quantf.trellis_cabac_chroma_422_dc( TRELLIS_ARGS );
     else if( dc )

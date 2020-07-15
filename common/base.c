@@ -412,6 +412,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_pb_factor = 1.3;
     param->rc.i_aq_mode = X264_AQ_VARIANCE;
     param->rc.f_aq_strength = 1.0;
+    param->rc.f_aq_dark = 1.0;
     param->rc.i_lookahead = 40;
 
     param->rc.b_stat_write = 0;
@@ -437,6 +438,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.i_me_method = X264_ME_HEX;
     param->analyse.f_psy_rd = 1.0;
     param->analyse.b_psy = 1;
+    param->analyse.b_dynamic_psy = 1;
     param->analyse.f_psy_trellis = 0;
     param->analyse.i_me_range = 16;
     param->analyse.i_subpel_refine = 7;
@@ -1251,6 +1253,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     }
     OPT("psy")
         p->analyse.b_psy = atobool(value);
+    OPT("dynamic-psy")
+        p->analyse.b_dynamic_psy = atobool(value);
     OPT("chroma-me")
         p->analyse.b_chroma_me = atobool(value);
     OPT("mixed-refs")
@@ -1308,6 +1312,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.i_aq_mode = atoi(value);
     OPT("aq-strength")
         p->rc.f_aq_strength = atof(value);
+    OPT("aq-dark")
+        p->rc.f_aq_dark = atof(value);
     OPT("pass")
     {
         int pass = x264_clip3( atoi(value), 0, 3 );
@@ -1416,7 +1422,10 @@ char *x264_param2string( x264_param_t *p, int b_res )
     s += sprintf( s, " subme=%d", p->analyse.i_subpel_refine );
     s += sprintf( s, " psy=%d", p->analyse.b_psy );
     if( p->analyse.b_psy )
+    {
         s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
+        s += sprintf( s, " dynamic_psy=%d", p->analyse.b_dynamic_psy);
+    }
     s += sprintf( s, " mixed_ref=%d", p->analyse.b_mixed_references );
     s += sprintf( s, " me_range=%d", p->analyse.i_me_range );
     s += sprintf( s, " chroma_me=%d", p->analyse.b_chroma_me );
@@ -1504,11 +1513,13 @@ char *x264_param2string( x264_param_t *p, int b_res )
     if( !(p->rc.i_rc_method == X264_RC_CQP && p->rc.i_qp_constant == 0) )
     {
         s += sprintf( s, " ip_ratio=%.2f", p->rc.f_ip_factor );
-        if( p->i_bframe && !p->rc.b_mb_tree )
+        if( p->i_bframe )
             s += sprintf( s, " pb_ratio=%.2f", p->rc.f_pb_factor );
         s += sprintf( s, " aq=%d", p->rc.i_aq_mode );
         if( p->rc.i_aq_mode )
             s += sprintf( s, ":%.2f", p->rc.f_aq_strength );
+        if( p->rc.i_aq_mode > 2 )
+            s += sprintf( s, " aq-dark=%.2f", p->rc.f_aq_dark );
         if( p->rc.psz_zones )
             s += sprintf( s, " zones=%s", p->rc.psz_zones );
         else if( p->rc.i_zones )

@@ -227,6 +227,7 @@ static x264_frame_t *frame_new( x264_t *h, int b_fdec )
         {
             PREALLOC( frame->f_qp_offset, h->mb.i_mb_count * sizeof(float) );
             PREALLOC( frame->f_qp_offset_aq, h->mb.i_mb_count * sizeof(float) );
+            PREALLOC( frame->f_qp_offset_aq_d, h->mb.i_mb_count * sizeof(float) );
             if( h->frames.b_have_lowres )
                 PREALLOC( frame->i_inv_qscale_factor, (h->mb.i_mb_count+3) * sizeof(uint16_t) );
         }

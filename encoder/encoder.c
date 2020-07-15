@@ -889,6 +889,7 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.analyse.b_fast_pskip = 0;
         h->param.analyse.i_noise_reduction = 0;
         h->param.analyse.b_psy = 0;
+        h->param.analyse.b_dynamic_psy = 1;
         h->param.i_bframe = 0;
         /* 8x8dct is not useful without RD in CAVLC lossless */
         if( !h->param.b_cabac && h->param.analyse.i_subpel_refine < 6 )
@@ -1103,8 +1104,8 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.analyse.i_me_method > X264_ME_TESA )
         h->param.analyse.i_me_method = X264_ME_HEX;
     h->param.analyse.i_me_range = x264_clip3( h->param.analyse.i_me_range, 4, 1024 );
-    if( h->param.analyse.i_me_range > 16 && h->param.analyse.i_me_method <= X264_ME_HEX )
-        h->param.analyse.i_me_range = 16;
+    if( h->param.analyse.i_me_range > 256 && h->param.analyse.i_me_method <= X264_ME_HEX )
+        h->param.analyse.i_me_range = 256;
     if( h->param.analyse.i_me_method == X264_ME_TESA &&
         (h->mb.b_lossless || h->param.analyse.i_subpel_refine <= 1) )
         h->param.analyse.i_me_method = X264_ME_ESA;
@@ -1122,6 +1123,7 @@ static int validate_parameters( x264_t *h, int b_open )
     h->param.analyse.i_trellis = x264_clip3( h->param.analyse.i_trellis, 0, 2 );
     h->param.rc.i_aq_mode = x264_clip3( h->param.rc.i_aq_mode, 0, 3 );
     h->param.rc.f_aq_strength = x264_clip3f( h->param.rc.f_aq_strength, 0, 3 );
+    h->param.rc.f_aq_dark = x264_clip3f( h->param.rc.f_aq_dark, 0, 9 );
     if( h->param.rc.f_aq_strength == 0 )
         h->param.rc.i_aq_mode = 0;
 
@@ -1341,6 +1343,7 @@ static int validate_parameters( x264_t *h, int b_open )
     BOOLIFY( analyse.b_fast_pskip );
     BOOLIFY( analyse.b_dct_decimate );
     BOOLIFY( analyse.b_psy );
+    BOOLIFY( analyse.b_dynamic_psy );
     BOOLIFY( analyse.b_psnr );
     BOOLIFY( analyse.b_ssim );
     BOOLIFY( rc.b_stat_write );

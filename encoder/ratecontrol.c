@@ -377,11 +377,13 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
             for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
             {
                 float qp_adj;
+                float qp_adj_d = 0;
                 int mb_xy = mb_x + mb_y*h->mb.i_mb_stride;
                 if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
                 {
                     qp_adj = frame->f_qp_offset[mb_xy];
-                    qp_adj = strength * (qp_adj - avg_adj) + bias_strength * (1.f - 14.f / (qp_adj * qp_adj));
+                    qp_adj_d = h->param.rc.f_aq_dark * (1.f - 14.f / (qp_adj * qp_adj));
+                    qp_adj = strength * (qp_adj - avg_adj) + qp_adj_d;
                 }
                 else if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE )
                 {
@@ -393,10 +395,14 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                     uint32_t energy = ac_energy_mb( h, mb_x, mb_y, frame );
                     qp_adj = strength * (x264_log2( X264_MAX(energy, 1) ) - (14.427f + 2*(BIT_DEPTH-8)));
                 }
-                if( quant_offsets )
+                if( quant_offsets ) 
+                {
                     qp_adj += quant_offsets[mb_xy];
+                    qp_adj_d += quant_offsets[mb_xy];
+                }
                 frame->f_qp_offset[mb_xy] =
                 frame->f_qp_offset_aq[mb_xy] = qp_adj;
+                frame->f_qp_offset_aq_d[mb_xy] = qp_adj_d;
                 if( h->frames.b_have_lowres )
                     frame->i_inv_qscale_factor[mb_xy] = x264_exp2fix8(qp_adj);
             }
@@ -760,7 +766,7 @@ int x264_ratecontrol_new( x264_t *h )
 
     if( h->param.rc.b_mb_tree )
     {
-        h->param.rc.f_pb_factor = 1;
+        /* h->param.rc.f_pb_factor = 1; */
         rc->qcompress = 1;
     }
     else
