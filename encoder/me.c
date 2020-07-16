@@ -343,6 +343,23 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
 
         case X264_ME_HEX:
         {
+            /* diamond search, radius 1 */
+            bcost <<= 4;
+            int i = i_me_range;
+            do
+            {
+                COST_MV_X4_DIR( 0,-1, 0,1, -1,0, 1,0, costs );
+                COPY1_IF_LT( bcost, (costs[0]<<4)+1 );
+                COPY1_IF_LT( bcost, (costs[1]<<4)+3 );
+                COPY1_IF_LT( bcost, (costs[2]<<4)+4 );
+                COPY1_IF_LT( bcost, (costs[3]<<4)+12 );
+                if( !(bcost&15) )
+                    break;
+                bmx -= (bcost<<28)>>30;
+                bmy -= (bcost<<30)>>30;
+                bcost &= ~15;
+            } while( --i && CHECK_MVRANGE(bmx, bmy) );
+            bcost >>= 4;
     me_hex2:
             /* hexagon search, radius 2 */
     #if 0
