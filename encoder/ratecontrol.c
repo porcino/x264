@@ -384,7 +384,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                     qp_adj = frame->f_qp_offset[mb_xy];
                     qp_adj_d = h->param.rc.f_aq_dark * (1.f - 14.f / (qp_adj * qp_adj));
                     if( h->sh.i_type == SLICE_TYPE_B )
-                        qp_adj_d *= h->param.rc.f_pb_factor;
+                        qp_adj_d *= h->param.rc.f_pb_factor / h->param.rc.f_pb_dark;
                     qp_adj = strength * (qp_adj - avg_adj) + qp_adj_d;
                 }
                 else if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE )
