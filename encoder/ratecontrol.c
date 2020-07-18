@@ -373,6 +373,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
         else
             strength = h->param.rc.f_aq_strength * 1.0397f;
 
+        double avg_qp_d = 0;
         for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
             for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
             {
@@ -405,9 +406,21 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 frame->f_qp_offset[mb_xy] =
                 frame->f_qp_offset_aq[mb_xy] = qp_adj;
                 frame->f_qp_offset_aq_d[mb_xy] = qp_adj_d;
+                avg_qp_d += qp_adj_d;
                 if( h->frames.b_have_lowres )
                     frame->i_inv_qscale_factor[mb_xy] = x264_exp2fix8(qp_adj);
             }
+        if ( h->param.rc.f_aq_dark_adapt > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
+        {
+            avg_qp_d /= h->mb.i_mb_count;
+            for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
+                for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
+                {
+                    int mb_xy = mb_x + mb_y*h->mb.i_mb_stride;
+                    if( frame->f_qp_offset_aq_d[mb_xy] < avg_qp_d )
+                        frame->f_qp_offset_aq_d[mb_xy] = avg_qp_d + ((frame->f_qp_offset_aq_d[mb_xy] - avg_qp_d) / (h->param.rc.f_aq_dark_adapt + 1));
+                }
+        }
     }
 
     /* Remove mean from SSD calculation */
