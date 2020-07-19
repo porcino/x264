@@ -413,12 +413,13 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
         if ( h->param.rc.f_aq_dark_adapt > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
             avg_qp_d /= h->mb.i_mb_count;
+            if ( !avg_qp_d == 0 )
+                avg_qp_d = 16 * (h->param.rc.f_aq_dark_adapt + 21 / 33) / (-1 * avg_qp_d);
             for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
                 for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
                 {
                     int mb_xy = mb_x + mb_y*h->mb.i_mb_stride;
-                    if( frame->f_qp_offset_aq_d[mb_xy] < avg_qp_d )
-                        frame->f_qp_offset_aq_d[mb_xy] = avg_qp_d + ((frame->f_qp_offset_aq_d[mb_xy] - avg_qp_d) / (h->param.rc.f_aq_dark_adapt + 1));
+                    frame->f_qp_offset_aq_d[mb_xy] /= avg_qp_d;
                 }
         }
     }
