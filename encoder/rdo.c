@@ -721,7 +721,7 @@ int quant_trellis_cabac( x264_t *h, dctcoef *dct,
     memcpy( &level_state1, cabac_state+8, sizeof(uint16_t) );
 #define TRELLIS_ARGS unquant_mf, zigzag, lambda2, last_nnz, orig_coefs, quant_coefs, dct,\
                      cabac_state_sig, cabac_state_last, level_state0, level_state1
-    float dynamic_psy_ratio = 300 / (pow((x264_ratecontrol_qp( h ) - 20) / 3, 4) + 300);
+    float dynamic_psy_ratio = h->param.analyse.b_dynamic_psy ? 300 / (pow((x264_ratecontrol_qp( h ) - 20) / 3, 4) + 300) : 1;
     if( num_coefs == 16 && !dc )
         if( b_chroma || !h->mb.i_psy_trellis )
             return h->quantf.trellis_cabac_4x4( TRELLIS_ARGS, b_ac );
