@@ -602,6 +602,7 @@ int x264_opencl_finalize_cost( x264_t *h, int lambda, x264_frame_t **frames, int
     OCLCHECK( clSetKernelArg, h->opencl.rowsum_inter_kernel, arg++, sizeof(cl_mem), &h->opencl.frame_stats[h->opencl.last_buf] );
     OCLCHECK( clSetKernelArg, h->opencl.rowsum_inter_kernel, arg++, sizeof(int), &h->mb.i_mb_width );
     OCLCHECK( clSetKernelArg, h->opencl.rowsum_inter_kernel, arg++, sizeof(int), &h->param.i_bframe_bias );
+    OCLCHECK( clSetKernelArg, h->opencl.rowsum_inter_kernel, arg++, sizeof(int), &fenc->bias_dark );
     OCLCHECK( clSetKernelArg, h->opencl.rowsum_inter_kernel, arg++, sizeof(int), &b );
     OCLCHECK( clSetKernelArg, h->opencl.rowsum_inter_kernel, arg++, sizeof(int), &p0 );
     OCLCHECK( clSetKernelArg, h->opencl.rowsum_inter_kernel, arg++, sizeof(int), &p1 );
