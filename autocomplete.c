@@ -87,6 +87,7 @@ static const char * const opts_suggest[] =
 static const char * const opts_nosuggest[] =
 {
     "--b-bias",
+    "--b-bias-dark",
     "--bframes", "-b",
     "--deblock", "-f",
     "--bitrate", "-B",
