@@ -1020,6 +1020,7 @@ static int validate_parameters( x264_t *h, int b_open )
     }
     h->param.i_bframe = x264_clip3( h->param.i_bframe, 0, X264_MIN( X264_BFRAME_MAX, h->param.i_keyint_max-1 ) );
     h->param.i_bframe_bias = x264_clip3( h->param.i_bframe_bias, -90, 100 );
+    h->param.i_bframe_bias_dark = x264_clip3( h->param.i_bframe_bias_dark, -90, 100 );
     if( h->param.i_bframe <= 1 )
         h->param.i_bframe_pyramid = X264_B_PYRAMID_NONE;
     h->param.i_bframe_pyramid = x264_clip3( h->param.i_bframe_pyramid, X264_B_PYRAMID_NONE, X264_B_PYRAMID_NORMAL );
@@ -1813,6 +1814,7 @@ static int encoder_try_reconfig( x264_t *h, x264_param_t *param, int *rc_reconfi
 #define COPY(var) h->param.var = param->var
     COPY( i_frame_reference ); // but never uses more refs than initially specified
     COPY( i_bframe_bias );
+    COPY( i_bframe_bias_dark );
     if( h->param.i_scenecut_threshold )
         COPY( i_scenecut_threshold ); // can't turn it on or off, only vary the threshold
     COPY( b_deblocking_filter );

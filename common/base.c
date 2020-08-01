@@ -386,6 +386,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->i_scenecut_threshold = 40;
     param->i_bframe_adaptive = X264_B_ADAPT_FAST;
     param->i_bframe_bias = 0;
+    param->i_bframe_bias_dark = 0;
     param->i_bframe_pyramid = X264_B_PYRAMID_NORMAL;
     param->b_interlaced = 0;
     param->b_constrained_intra = 0;
@@ -1077,6 +1078,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     }
     OPT("b-bias")
         p->i_bframe_bias = atoi(value);
+    OPT("b-bias-dark")
+        p->i_bframe_bias_dark = atoi(value);
     OPT("b-pyramid")
     {
         b_error |= parse_enum( value, x264_b_pyramid_names, &p->i_bframe_pyramid );
@@ -1529,6 +1532,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
             s += sprintf( s, " aq-dark=%.2f", p->rc.f_aq_dark );
             s += sprintf( s, " aq-dark-adapt=%.2f", p->rc.f_aq_dark_adapt );
             s += sprintf( s, " pb-dark=%.2f", p->rc.f_pb_dark );
+            s += sprintf( s, " b-bias-dark=%d", p->i_bframe_bias_dark );
         }
         if( p->rc.psz_zones )
             s += sprintf( s, " zones=%s", p->rc.psz_zones );

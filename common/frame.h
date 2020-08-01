@@ -176,6 +176,8 @@ typedef struct x264_frame
     uint8_t *mb_info;
     void (*mb_info_free)( void* );
 
+    int bias_dark;
+
 #if HAVE_OPENCL
     x264_frame_opencl_t opencl;
 #endif
