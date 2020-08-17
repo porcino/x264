@@ -983,7 +983,7 @@ static int slicetype_frame_cost( x264_t *h, x264_mb_analysis_t *a,
 
             i_score = fenc->i_cost_est[b-p0][p1-b];
             if( b != p1 )
-                i_score = (uint64_t)i_score * 100 / (120 + fenc->bias_dark);
+                i_score = (uint64_t)i_score * 100 / (120 + fenc->bias_aq);
             else
                 fenc->b_intra_calculated = 1;
 

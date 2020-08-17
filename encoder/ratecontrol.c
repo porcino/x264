@@ -302,7 +302,7 @@ static NOINLINE uint32_t ac_energy_mb( x264_t *h, int mb_x, int mb_y, x264_frame
 
 void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_offsets )
 {
-    frame->bias_dark = h->param.i_bframe_bias;
+    frame->bias_aq = h->param.i_bframe_bias;
     /* Initialize frame stats */
     for( int i = 0; i < 3; i++ )
     {
@@ -374,6 +374,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
         else
             strength = h->param.rc.f_aq_strength * 1.0397f;
 
+        double avg_qp = 0;
         double avg_qp_d = 0;
         for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
             for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
@@ -407,16 +408,18 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 frame->f_qp_offset[mb_xy] =
                 frame->f_qp_offset_aq[mb_xy] = qp_adj;
                 frame->f_qp_offset_aq_d[mb_xy] = qp_adj_d;
+                avg_qp += qp_adj;
                 avg_qp_d += qp_adj_d;
                 if( h->frames.b_have_lowres )
                     frame->i_inv_qscale_factor[mb_xy] = x264_exp2fix8(qp_adj);
             }
         if ( h->param.rc.f_aq_dark_adapt > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
+            avg_qp /= h->mb.i_mb_count;
             avg_qp_d /= h->mb.i_mb_count;
             if ( avg_qp_d < 0)
             {
-                frame->bias_dark = (int)(h->param.i_bframe_bias_dark - ((-100 / (avg_qp_d - 1)) * (h->param.i_bframe_bias_dark - h->param.i_bframe_bias) / 100));
+                frame->bias_aq = (int)(h->param.i_bframe_bias_aq - ((-100 / (avg_qp - 1)) * (h->param.i_bframe_bias_aq - h->param.i_bframe_bias) / 100));
                 avg_qp_d = 16 * (h->param.rc.f_aq_dark_adapt + 21 / 33) / (-1 * avg_qp_d);
                 if ( avg_qp_d > 1)
                     for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )

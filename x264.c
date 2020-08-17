@@ -1053,7 +1053,7 @@ static struct option long_options[] =
     { "b-adapt",     required_argument, NULL, 0 },
     { "no-b-adapt",        no_argument, NULL, 0 },
     { "b-bias",      required_argument, NULL, 0 },
-    { "b-bias-dark", required_argument, NULL, 0 },
+    { "b-bias-aq", required_argument, NULL, 0 },
     { "b-pyramid",   required_argument, NULL, 0 },
     { "open-gop",          no_argument, NULL, 0 },
     { "bluray-compat",     no_argument, NULL, 0 },
