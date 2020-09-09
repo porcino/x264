@@ -414,7 +414,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_aq_mode = X264_AQ_VARIANCE;
     param->rc.f_aq_strength = 1.0;
     param->rc.f_aq_psy = 1.0;
-    param->rc.f_aq_psy_dark = 1.0
+    param->rc.f_aq_psy_dark = 1.0;
     param->rc.f_aq_dark = 1.0;
     param->rc.f_aq_dark_adapt = 0;
     param->rc.f_pb_dark = 1.0;
