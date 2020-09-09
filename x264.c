@@ -1123,6 +1123,7 @@ static struct option long_options[] =
     { "no-dct-decimate",   no_argument, NULL, 0 },
     { "aq-strength", required_argument, NULL, 0 },
     { "aq-psy",      required_argument, NULL, 0 },
+    { "aq-psy-dark", required_argument, NULL, 0 },
     { "aq-dark",     required_argument, NULL, 0 },
     { "aq-dark-adapt",required_argument, NULL, 0 },
     { "pb-dark",     required_argument, NULL, 0 },

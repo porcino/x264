@@ -414,6 +414,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_aq_mode = X264_AQ_VARIANCE;
     param->rc.f_aq_strength = 1.0;
     param->rc.f_aq_psy = 1.0;
+    param->rc.f_aq_psy_dark = 1.0
     param->rc.f_aq_dark = 1.0;
     param->rc.f_aq_dark_adapt = 0;
     param->rc.f_pb_dark = 1.0;
@@ -1320,6 +1321,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.f_aq_strength = atof(value);
     OPT("aq-psy")
         p->rc.f_aq_psy = atof(value);
+    OPT("aq-psy-dark")
+        p->rc.f_aq_psy_dark = atof(value);
     OPT("aq-dark")
         p->rc.f_aq_dark = atof(value);
     OPT("aq-dark-adapt")
@@ -1533,6 +1536,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
         if( p->rc.i_aq_mode > 2 )
         {
             s += sprintf( s, " aq-psy=%.2f", p->rc.f_aq_psy );
+            s += sprintf( s, " aq-psy-dark=%.2f", p->rc.f_aq_psy_dark );
             s += sprintf( s, " aq-dark=%.2f", p->rc.f_aq_dark );
             s += sprintf( s, " aq-dark-adapt=%.2f", p->rc.f_aq_dark_adapt );
             s += sprintf( s, " pb-dark=%.2f", p->rc.f_pb_dark );
