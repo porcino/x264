@@ -143,10 +143,10 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
         }
         if( h->param.analyse.b_dynamic_psy )
         {
-            float qp_offset_d = h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy];
-            if( h->sh.i_type == SLICE_TYPE_B )
-                qp_offset_d /= h->param.rc.f_pb_factor;
-            satd = (int32_t)(satd * h->mb.i_psy_rd * 300 / (pow((x264_ratecontrol_qp( h ) + qp_offset_d - 20) / 3, 4) + 300) * h->mb.i_psy_rd_lambda + 128) >> 8;
+            float qp_offset_d = h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * h->param.rc.f_aq_psy_dark;
+            float qp_offset = h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] - qp_offset_d;
+            qp_offset *= 1 - h->param.rc.f_aq_psy;
+            satd = (int32_t)(satd * h->mb.i_psy_rd * 300 / (pow((x264_ratecontrol_qp( h ) + qp_offset_d - qp_offset - 20) / 3, 4) + 300) * h->mb.i_psy_rd_lambda + 128) >> 8;
         }
         else
         {
