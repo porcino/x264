@@ -444,6 +444,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.f_psy_rd = 1.0;
     param->analyse.b_psy = 1;
     param->analyse.b_dynamic_psy = 1;
+    param->analyse.i_psy_end = 39;
     param->analyse.f_psy_trellis = 0;
     param->analyse.i_me_range = 16;
     param->analyse.i_subpel_refine = 7;
@@ -1262,6 +1263,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->analyse.b_psy = atobool(value);
     OPT("dynamic-psy")
         p->analyse.b_dynamic_psy = atobool(value);
+    OPT("psy-end")
+        p->analyse.i_psy_end = atoi(value);
     OPT("chroma-me")
         p->analyse.b_chroma_me = atobool(value);
     OPT("mixed-refs")
@@ -1440,6 +1443,12 @@ char *x264_param2string( x264_param_t *p, int b_res )
     {
         s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
         s += sprintf( s, " dynamic_psy=%d", p->analyse.b_dynamic_psy);
+        s += sprintf( s, " psy-end=%d", p->analyse.i_psy_end );
+        if( p->rc.i_aq_mode > 2 )
+        {
+            s += sprintf( s, " aq-psy=%.2f", p->rc.f_aq_psy );
+            s += sprintf( s, " aq-psy-dark=%.2f", p->rc.f_aq_psy_dark );
+        }
     }
     s += sprintf( s, " mixed_ref=%d", p->analyse.b_mixed_references );
     s += sprintf( s, " me_range=%d", p->analyse.i_me_range );
@@ -1535,8 +1544,6 @@ char *x264_param2string( x264_param_t *p, int b_res )
             s += sprintf( s, ":%.2f", p->rc.f_aq_strength );
         if( p->rc.i_aq_mode > 2 )
         {
-            s += sprintf( s, " aq-psy=%.2f", p->rc.f_aq_psy );
-            s += sprintf( s, " aq-psy-dark=%.2f", p->rc.f_aq_psy_dark );
             s += sprintf( s, " aq-dark=%.2f", p->rc.f_aq_dark );
             s += sprintf( s, " aq-dark-adapt=%.2f", p->rc.f_aq_dark_adapt );
             s += sprintf( s, " pb-dark=%.2f", p->rc.f_pb_dark );
