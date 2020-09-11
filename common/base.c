@@ -411,6 +411,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_step = 4;
     param->rc.f_ip_factor = 1.4;
     param->rc.f_pb_factor = 1.3;
+    param->rc.b_pb_dynamic = 1;
     param->rc.i_aq_mode = X264_AQ_VARIANCE;
     param->rc.f_aq_strength = 1.0;
     param->rc.f_aq_psy = 1.0;
@@ -1318,6 +1319,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.f_ip_factor = atof(value);
     OPT2("pbratio", "pb-factor")
         p->rc.f_pb_factor = atof(value);
+    OPT("pb-dynamic")
+        p->rc.b_pb_dynamic = atobool(value);
     OPT("aq-mode")
         p->rc.i_aq_mode = atoi(value);
     OPT("aq-strength")
@@ -1442,7 +1445,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
     if( p->analyse.b_psy )
     {
         s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
-        s += sprintf( s, " dynamic_psy=%d", p->analyse.b_dynamic_psy);
+        s += sprintf( s, " dynamic-psy=%d", p->analyse.b_dynamic_psy);
         s += sprintf( s, " psy-end=%d", p->analyse.i_psy_end );
         if( p->rc.i_aq_mode > 2 )
         {
@@ -1538,7 +1541,10 @@ char *x264_param2string( x264_param_t *p, int b_res )
     {
         s += sprintf( s, " ip_ratio=%.2f", p->rc.f_ip_factor );
         if( p->i_bframe )
+        {
             s += sprintf( s, " pb_ratio=%.2f", p->rc.f_pb_factor );
+            s += sprintf( s, " pb-dynamic=%d", p->rc.b_pb_dynamic );
+        }
         s += sprintf( s, " aq=%d", p->rc.i_aq_mode );
         if( p->rc.i_aq_mode )
             s += sprintf( s, ":%.2f", p->rc.f_aq_strength );
