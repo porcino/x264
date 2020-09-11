@@ -1443,7 +1443,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
     {
         s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
         s += sprintf( s, " dynamic_psy=%d", p->analyse.b_dynamic_psy);
-        s += sprintf( s, " psy-end=%s", p->analyse.i_psy_end );
+        s += sprintf( s, " psy-end=%d", p->analyse.i_psy_end );
         if( p->rc.i_aq_mode > 2 )
         {
             s += sprintf( s, " aq-psy=%.2f", p->rc.f_aq_psy );
