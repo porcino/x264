@@ -890,6 +890,7 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.analyse.i_noise_reduction = 0;
         h->param.analyse.b_psy = 0;
         h->param.analyse.b_dynamic_psy = 1;
+        h->param.analyse.i_psy_end = 39;
         h->param.i_bframe = 0;
         /* 8x8dct is not useful without RD in CAVLC lossless */
         if( !h->param.b_cabac && h->param.analyse.i_subpel_refine < 6 )
@@ -1122,6 +1123,7 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.analyse.intra &= ~X264_ANALYSE_I8x8;
     }
     h->param.analyse.i_trellis = x264_clip3( h->param.analyse.i_trellis, 0, 2 );
+    h->param.analyse.i_psy_end = x264_clip3( h->param.analyse.i_psy_end, 10, 70 );
     h->param.rc.i_aq_mode = x264_clip3( h->param.rc.i_aq_mode, 0, 3 );
     h->param.rc.f_aq_strength = x264_clip3f( h->param.rc.f_aq_strength, 0, 3 );
     h->param.rc.f_aq_psy = x264_clip3f( h->param.rc.f_aq_psy, 0, 1 );

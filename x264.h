@@ -419,6 +419,7 @@ typedef struct x264_param_t
         float        f_psy_trellis; /* Psy trellis strength */
         int          b_psy; /* Toggle all psy optimizations */
         int          b_dynamic_psy;
+        int          i_psy_end;
 
         int          b_mb_info;            /* Use input mb_info data in x264_picture_t */
         int          b_mb_info_update; /* Update the values in mb_info according to the results of encoding. */

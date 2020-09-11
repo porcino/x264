@@ -1112,6 +1112,7 @@ static struct option long_options[] =
     { "no-psy",            no_argument, NULL, 0 },
     { "psy",               no_argument, NULL, 0 },
     { "dynamic_psy"        no_argument, NULL, 0 },
+    { "psy-end"      required_argument, NULL, 0 },
     { "mixed-refs",        no_argument, NULL, 0 },
     { "no-mixed-refs",     no_argument, NULL, 0 },
     { "no-chroma-me",      no_argument, NULL, 0 },
