@@ -1139,6 +1139,7 @@ static struct option long_options[] =
     { "crf-max",     required_argument, NULL, 0 },
     { "ipratio",     required_argument, NULL, 0 },
     { "pbratio",     required_argument, NULL, 0 },
+    { "pb-dynamic"         no_argument, NULL, 0 },
     { "chroma-qp-offset", required_argument, NULL, 0 },
     { "pass",        required_argument, NULL, 'p' },
     { "stats",       required_argument, NULL, 0 },

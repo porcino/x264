@@ -450,6 +450,7 @@ typedef struct x264_param_t
         float       f_vbv_buffer_init; /* <=1: fraction of buffer_size. >1: kbit */
         float       f_ip_factor;
         float       f_pb_factor;
+        int         b_pb_dynamic;
 
         /* VBV filler: force CBR VBV and use filler bytes to ensure hard-CBR.
          * Implied by NAL-HRD CBR. */
