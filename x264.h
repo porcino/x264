@@ -474,6 +474,7 @@ typedef struct x264_param_t
 
         /* 2pass params (same as ffmpeg ones) */
         float       f_qcompress;    /* 0.0 => cbr, 1.0 => constant qp */
+        float       f_mb_tree_strength;
         float       f_qblur;        /* temporally blur quants */
         float       f_complexity_blur; /* temporally blur complexity */
         x264_zone_t *zones;         /* ratecontrol overrides */

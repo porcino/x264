@@ -430,6 +430,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
+    param->rc.f_mb_tree_strength = 0.6;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -1350,6 +1351,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.f_qcompress = atof(value);
     OPT("mbtree")
         p->rc.b_mb_tree = atobool(value);
+    OPT("mbtree-strength")
+        p->rc.f_mb_tree_strength = atof(value);
     OPT("qblur")
         p->rc.f_qblur = atof(value);
     OPT2("cplxblur", "cplx-blur")
@@ -1506,6 +1509,8 @@ char *x264_param2string( x264_param_t *p, int b_res )
     s += sprintf( s, " rc=%s mbtree=%d", p->rc.i_rc_method == X264_RC_ABR ?
                                ( p->rc.b_stat_read ? "2pass" : p->rc.i_vbv_max_bitrate == p->rc.i_bitrate ? "cbr" : "abr" )
                                : p->rc.i_rc_method == X264_RC_CRF ? "crf" : "cqp", p->rc.b_mb_tree );
+    if( p->rc.b_mb_tree )
+        s += sprintf( s, " mbtree-strength=%.2f", p->rc.f_mb_tree_strength );
     if( p->rc.i_rc_method == X264_RC_ABR || p->rc.i_rc_method == X264_RC_CRF )
     {
         if( p->rc.i_rc_method == X264_RC_CRF )
