@@ -464,6 +464,7 @@ typedef struct x264_param_t
         float       f_aq_dark_adapt;
         float       f_pb_dark;
         int         b_mb_tree;      /* Macroblock-tree ratecontrol. */
+        int         b_mb_tree_vstr;
         int         i_lookahead;
 
         /* 2pass */
