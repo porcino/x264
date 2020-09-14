@@ -1037,7 +1037,7 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
     /* Allow the strength to be adjusted via qcompress, since the two
      * concepts are very similar. */
     float strength = 5.0f;
-    if( h->param.rc.b_mb_tree_vstr )
+    if( h->param.rc.b_mb_tree_vstr && !IS_X264_TYPE_I( frame->i_type ) )
     {
         float tree_avg = 0.0f;
         for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
