@@ -350,7 +350,6 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
          * FIXME: while they're written in 5 significant digits, they're only tuned to 2. */
         float strength;
         float avg_adj = 0.f;
-        float bias_strength = 0.f;
 
         if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE || h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
@@ -369,7 +368,6 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
             avg_adj_pow2 /= h->mb.i_mb_count;
             strength = h->param.rc.f_aq_strength * avg_adj;
             avg_adj = avg_adj - 0.5f * (avg_adj_pow2 - 14.f) / avg_adj;
-            bias_strength = h->param.rc.f_aq_strength;
         }
         else
             strength = h->param.rc.f_aq_strength * 1.0397f;
@@ -1551,7 +1549,7 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
         q = i_force_qp - 1;
 
     if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.b_pb_dynamic )
-        q *= h->param.rc.f_pb_factor / 10 * (h->fenc->i_bframes / h->param.i_bframe) + 1;
+        q *= h->param.rc.f_pb_factor / 20 * (h->fenc->i_bframes / h->param.i_bframe) + 1;
     q = x264_clip3f( q, h->param.rc.i_qp_min, h->param.rc.i_qp_max );
 
     rc->qpa_rc = rc->qpa_rc_prev =

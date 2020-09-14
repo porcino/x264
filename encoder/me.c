@@ -363,7 +363,7 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
     me_hex2:
             /* hexagon search, radius 2 */
     #if 0
-            for( int i = 0; i < i_me_range/2; i++ )
+            for( i = 0; i < i_me_range/2; i++ )
             {
                 omx = bmx; omy = bmy;
                 COST_MV( omx-2, omy   );
@@ -398,7 +398,7 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
                 bmy += hex2[dir+1][1];
 
                 /* half hexagon, not overlapping the previous iteration */
-                for( int i = (i_me_range>>1) - 1; i > 0 && CHECK_MVRANGE(bmx, bmy); i-- )
+                for( i = (i_me_range>>1) - 1; i > 0 && CHECK_MVRANGE(bmx, bmy); i-- )
                 {
                     COST_MV_X3_DIR( hex2[dir+0][0], hex2[dir+0][1],
                                     hex2[dir+1][0], hex2[dir+1][1],
