@@ -417,7 +417,8 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
             avg_qp_d /= h->mb.i_mb_count;
             if ( avg_qp_d < 0)
             {
-                frame->bias_aq = (int)(h->param.i_bframe_bias_aq - ((-100 / (avg_qp - 1)) * (h->param.i_bframe_bias_aq - h->param.i_bframe_bias) / 100));
+                if ( avg_qp < 0 )
+                    frame->bias_aq = (int)(h->param.i_bframe_bias_aq - ((-100 / (avg_qp - 1)) * (h->param.i_bframe_bias_aq - h->param.i_bframe_bias) / 100));
                 avg_qp_d = 16 * (h->param.rc.f_aq_dark_adapt + 21 / 33) / (-1 * avg_qp_d);
                 if ( avg_qp_d > 1)
                     for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
@@ -1549,7 +1550,7 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
         q = i_force_qp - 1;
 
     if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.b_pb_dynamic )
-        q *= h->param.rc.f_pb_factor / 20 * (h->fenc->i_bframes / h->param.i_bframe) + 1;
+        q *= h->param.rc.f_pb_factor / 15 * (h->fenc->i_bframes / 16) + 1;
     q = x264_clip3f( q, h->param.rc.i_qp_min, h->param.rc.i_qp_max );
 
     rc->qpa_rc = rc->qpa_rc_prev =
