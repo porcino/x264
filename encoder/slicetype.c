@@ -1051,11 +1051,12 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
             }
         }
         tree_avg /= h->mb.i_mb_count;
-        strength = 5.0f * (h->param.rc.f_mb_tree_strength - (h->param.rc.f_mb_tree_strength / 4 / 5.0f * tree_avg));
+        strength = h->param.rc.f_mb_tree_strength - (h->param.rc.f_mb_tree_strength / 4 / 5.0f * tree_avg);
+        strength = strength < (1.0f - h->param.rc.f_qcompress) ? 5.0f * (1.0f - h->param.rc.f_qcompress) : 5.0f * strength;
     }
     else
     {
-        strength *= h->param.rc.f_mb_tree_strength;
+        strength *= h->param.rc.f_mb_tree_strength < 1.0f - h->param.rc.f_qcompress ? 1.0f - h->param.rc.f_qcompress : h->param.rc.f_mb_tree_strength;
     }
     for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
     {
