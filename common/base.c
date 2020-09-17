@@ -430,7 +430,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
-    param->rc.f_mb_tree_strength = 0.6;
+    param->rc.f_mb_tree_strength = 0.4;
     param->rc.b_mb_tree_vstr = 1;
 
     /* Log */
@@ -1349,7 +1349,10 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         CHECKED_ERROR_PARAM_STRDUP( p->rc.psz_stat_out, p, value );
     }
     OPT("qcomp")
+    {
         p->rc.f_qcompress = atof(value);
+        p->rc.f_mb_tree_strength = 1 - p->rc.f_qcompress;
+    }
     OPT("mbtree")
         p->rc.b_mb_tree = atobool(value);
     OPT("mbtree-strength")

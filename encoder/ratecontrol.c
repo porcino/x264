@@ -1550,7 +1550,7 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
         q = i_force_qp - 1;
 
     if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.b_pb_dynamic )
-        q *= h->param.rc.f_pb_factor / 15 * (h->fenc->i_bframes / 16) + 1;
+        q *= h->param.rc.f_pb_factor / 10 * (h->fenc->i_bframes / 16) + 1;
     q = x264_clip3f( q, h->param.rc.i_qp_min, h->param.rc.i_qp_max );
 
     rc->qpa_rc = rc->qpa_rc_prev =
