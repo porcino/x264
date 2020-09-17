@@ -430,7 +430,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
-    param->rc.f_mb_tree_strength = 0.6;
+    param->rc.f_mb_tree_strength = 1.0 - param->rc.f_qcompress;
     param->rc.b_mb_tree_vstr = 1;
 
     /* Log */

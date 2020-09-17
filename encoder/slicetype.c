@@ -1037,7 +1037,7 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
     /* Allow the strength to be adjusted via qcompress, since the two
      * concepts are very similar. */
     float strength = 5.0f;
-    if( h->param.rc.b_mb_tree_vstr && !IS_X264_TYPE_I( frame->i_type ) )
+    if( h->param.rc.b_mb_tree_vstr && !IS_X264_TYPE_I( frame->i_type ) && !h->param.rc.b_stat_write)
     {
         float tree_avg = 0.0f;
         for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
@@ -1051,12 +1051,11 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
             }
         }
         tree_avg /= h->mb.i_mb_count;
-        strength = h->param.rc.f_mb_tree_strength - (h->param.rc.f_mb_tree_strength / 4 / 5.0f * tree_avg);
-        strength = strength < (1.0f - h->param.rc.f_qcompress) ? 5.0f * (1.0f - h->param.rc.f_qcompress) : 5.0f * strength;
+        strength *= h->param.rc.f_mb_tree_strength * sqrt(tree_avg) / 5.0f;
     }
     else
     {
-        strength *= h->param.rc.f_mb_tree_strength < 1.0f - h->param.rc.f_qcompress ? 1.0f - h->param.rc.f_qcompress : h->param.rc.f_mb_tree_strength;
+        strength *= h->param.rc.f_mb_tree_strength;
     }
     for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
     {
@@ -1069,6 +1068,7 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
         }
     }
 }
+
 
 static void macroblock_tree_propagate( x264_t *h, x264_frame_t **frames, float average_duration, int p0, int p1, int b, int referenced )
 {
