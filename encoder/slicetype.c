@@ -1036,35 +1036,19 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
 
     /* Allow the strength to be adjusted via qcompress, since the two
      * concepts are very similar. */
-    float strength = 5.0f;
-    if( h->param.rc.b_mb_tree_vstr && !IS_X264_TYPE_I( frame->i_type ) && !h->param.rc.b_stat_write)
-    {
-        float tree_avg = 0.0f;
-        for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
-        {
-            int intra_cost = (frame->i_intra_cost[mb_index] * frame->i_inv_qscale_factor[mb_index] + 128) >> 8;
-            if( intra_cost )
-            {
-                int propagate_cost = (frame->i_propagate_cost[mb_index] * fps_factor + 128) >> 8;
-                float log2_ratio = x264_log2(intra_cost + propagate_cost) - x264_log2(intra_cost) + weightdelta;
-                tree_avg += strength * log2_ratio;
-            }
-        }
-        tree_avg /= h->mb.i_mb_count;
-        strength *= h->param.rc.f_mb_tree_strength * sqrt(tree_avg) / 5.0f;
-    }
-    else
-    {
-        strength *= h->param.rc.f_mb_tree_strength;
-    }
+    float strength = 5.0f * h->param.rc.f_mb_tree_strength;
     for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
     {
+        float tree_avg = 0.0f;
         int intra_cost = (frame->i_intra_cost[mb_index] * frame->i_inv_qscale_factor[mb_index] + 128) >> 8;
         if( intra_cost )
         {
             int propagate_cost = (frame->i_propagate_cost[mb_index] * fps_factor + 128) >> 8;
             float log2_ratio = x264_log2(intra_cost + propagate_cost) - x264_log2(intra_cost) + weightdelta;
-            frame->f_qp_offset[mb_index] = frame->f_qp_offset_aq[mb_index] - strength * log2_ratio;
+            tree_avg = strength * log2_ratio;
+            if( h->param.rc.b_mb_tree_vstr && !IS_X264_TYPE_I( frame->i_type ) && !h->param.rc.b_stat_write)
+                tree_avg *= sin(tree_avg - 0.39) * pow(0.5, tree_avg - 0.39) + 0.5;
+            frame->f_qp_offset[mb_index] = frame->f_qp_offset_aq[mb_index] - tree_avg;
         }
     }
 }
