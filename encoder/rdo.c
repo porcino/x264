@@ -148,7 +148,7 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
             psy_const = pow(((x264_ratecontrol_qp(h) + qp_offset) - psy_const / 7) / psy_const, 4) * (-1) + 1;
             float qp_offset_d = h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy];
             qp_offset -= qp_offset_d;
-            psy_const = psy_const - (psy_const * (qp_offset * h->param.rc.f_aq_psy) - (psy_const * (qp_offset_d * h->param.rc.f_aq_psy_dark)));
+            psy_const = psy_const - (psy_const * (qp_offset * h->param.rc.f_aq_psy)) - (psy_const * (qp_offset_d * h->param.rc.f_aq_psy_dark));
             if( psy_const < 0 )
                 psy_const = 0;
             satd = (int32_t)(satd * h->mb.i_psy_rd * psy_const * h->mb.i_psy_rd_lambda + 128) >> 8;
