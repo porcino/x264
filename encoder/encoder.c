@@ -1127,6 +1127,7 @@ static int validate_parameters( x264_t *h, int b_open )
     h->param.analyse.i_psy_end = x264_clip3( h->param.analyse.i_psy_end, 10, 70 );
     h->param.rc.i_aq_mode = x264_clip3( h->param.rc.i_aq_mode, 0, 3 );
     h->param.rc.f_aq_strength = x264_clip3f( h->param.rc.f_aq_strength, 0, 3 );
+    h->param.rc.f_aq_b_factor = x264_clip3f( h->param.rc.f_aq_b_factor, 0, 3 );
     h->param.rc.f_aq_psy = x264_clip3f( h->param.rc.f_aq_psy, -9, 9 );
     h->param.rc.f_aq_psy_dark = x264_clip3f( h->param.rc.f_aq_psy_dark, -9, 9 );
     h->param.rc.f_aq_dark = x264_clip3f( h->param.rc.f_aq_dark, 0, 9 );
