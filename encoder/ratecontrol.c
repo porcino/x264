@@ -383,14 +383,14 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
                 {
                     qp_adj = frame->f_qp_offset[mb_xy];
-                    qp_adj_d = h->param.rc.f_aq_dark * (1.f - 14.f / (qp_adj * qp_adj));
+                    qp_adj_d = h->param.rc.f_aq_dark * h->fdec->quality * (1.f - 14.f / (qp_adj * qp_adj));
                     float qp_b_factor = 1;
                     if( h->sh.i_type == SLICE_TYPE_B )
                     {
                         qp_adj_d *= h->param.rc.f_pb_factor / h->param.rc.f_pb_dark;
                         qp_b_factor = h->param.rc.f_aq_b_factor * ((-10) / (qp_adj_d - 10));
                     }
-                    qp_adj = strength * (qp_adj - avg_adj) * qp_b_factor + qp_adj_d;
+                    qp_adj = strength * h->fdec->quality * (qp_adj - avg_adj) * qp_b_factor + qp_adj_d;
                 }
                 else if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE )
                 {
@@ -438,7 +438,9 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                         }
                     avg_qp_d_adapted /= h->mb.i_mb_count;
                 }
-                frame->bias_aq = (int)(h->param.i_bframe_bias_aq - ((-100 / (avg_qp_d_adapted - 1)) * (h->param.i_bframe_bias_aq - h->param.i_bframe_bias) / 100));
+                float bias_qty = 50 - h->fdec->quality * (50 - h->param.i_bframe_bias);
+                float bias_aq_qty = 0 - h->fdec->quality * (0 - h->param.i_bframe_bias_aq);
+                frame->bias_aq = (int)(bias_aq_qty - ((-100 / (avg_qp_d_adapted - 1)) * (bias_aq_qty - bias_qty) / 100));
             }
         }
     }
@@ -1563,6 +1565,17 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
 
     if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.b_pb_dynamic )
         q *= h->param.rc.f_pb_factor / 10 * (h->fenc->i_bframes / 16) + 1;
+    if( h->sh.i_type != SLICE_TYPE_B)
+    {
+        if (q > h->param.analyse.i_psy_end)
+        {
+            h->fdec->quality = (float)(1 - (q - h->param.analyse.i_psy_end) / (h->param.rc.i_qp_max - h->param.analyse.i_psy_end));
+            h->fdec->quality = h->fdec->quality > 0 ? h->fdec->quality : 0;
+        }
+        else
+            h->fdec->quality = 1.f;
+    }
+
     q = x264_clip3f( q, h->param.rc.i_qp_min, h->param.rc.i_qp_max );
 
     rc->qpa_rc = rc->qpa_rc_prev =

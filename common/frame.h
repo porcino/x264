@@ -177,6 +177,7 @@ typedef struct x264_frame
     void (*mb_info_free)( void* );
 
     int bias_aq;
+    float quality;
 
 #if HAVE_OPENCL
     x264_frame_opencl_t opencl;
