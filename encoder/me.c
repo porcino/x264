@@ -318,8 +318,8 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
     }
 
     int me_qty = h->mb.i_me_method;
-    if( h->mb.i_me_method == X264_ME_HEX && h->fdec->quality < 1.f )
-        me_qty = X264_ME_UMH;
+    if( h->mb.i_me_method == X264_ME_UMH && h->fdec->quality == 1.f )
+        me_qty = X264_ME_HEX;
     switch( me_qty )
     {
         case X264_ME_DIA:
