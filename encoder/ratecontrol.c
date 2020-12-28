@@ -440,7 +440,10 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 }
                 float bias_qty = 50 - h->fdec->quality * (50 - h->param.i_bframe_bias);
                 float bias_aq_qty = 0 - h->fdec->quality * (0 - h->param.i_bframe_bias_aq);
-                frame->bias_aq = (int)(bias_aq_qty - ((-100 / (avg_qp_d_adapted - 1)) * (bias_aq_qty - bias_qty) / 100));
+                if(avg_qp_d_adapted < 0)
+                    frame->bias_aq = (int)(bias_aq_qty - ((-100 / (avg_qp_d_adapted - 1)) * (bias_aq_qty - bias_qty) / 100));
+                else
+                    frame->bias_aq = 0;
             }
         }
     }
