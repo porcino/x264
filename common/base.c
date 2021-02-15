@@ -379,21 +379,21 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
 #endif
 
     /* Encoder parameters */
-    param->i_frame_reference = 3;
-    param->i_keyint_max = 250;
+    param->i_frame_reference = 6;
+    param->i_keyint_max = 500;
     param->i_keyint_min = X264_KEYINT_MIN_AUTO;
-    param->i_bframe = 3;
-    param->i_scenecut_threshold = 40;
-    param->i_bframe_adaptive = X264_B_ADAPT_FAST;
-    param->i_bframe_bias = 0;
-    param->i_bframe_bias_aq = 0;
+    param->i_bframe = 9;
+    param->i_scenecut_threshold = 20;
+    param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
+    param->i_bframe_bias = 12;
+    param->i_bframe_bias_aq = -24;
     param->i_bframe_pyramid = X264_B_PYRAMID_NORMAL;
     param->b_interlaced = 0;
     param->b_constrained_intra = 0;
 
     param->b_deblocking_filter = 1;
     param->i_deblocking_filter_alphac0 = 0;
-    param->i_deblocking_filter_beta = 0;
+    param->i_deblocking_filter_beta = 3;
 
     param->b_cabac = 1;
     param->i_cabac_init_idc = 0;
@@ -405,35 +405,35 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_vbv_buffer_size = 0;
     param->rc.f_vbv_buffer_init = 0.9;
     param->rc.i_qp_constant = -1;
-    param->rc.f_rf_constant = 23;
+    param->rc.f_rf_constant = 26;
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
-    param->rc.i_qp_step = 4;
-    param->rc.f_ip_factor = 1.4;
-    param->rc.f_pb_factor = 1.3;
+    param->rc.i_qp_step = 9;
+    param->rc.f_ip_factor = 1.1;
+    param->rc.f_pb_factor = 1.1;
     param->rc.b_pb_dynamic = 1;
-    param->rc.i_aq_mode = X264_AQ_VARIANCE;
-    param->rc.f_aq_strength = 1.0;
-    param->rc.f_aq_b_factor = 1.0;
-    param->rc.f_aq_psy = 1.0;
+    param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
+    param->rc.f_aq_strength = 0.84;
+    param->rc.f_aq_b_factor = 0.84;
+    param->rc.f_aq_psy = 0.1;
     param->rc.f_aq_psy_dark = 1.0;
-    param->rc.f_aq_dark = 1.0;
-    param->rc.f_aq_dark_adapt = 0;
-    param->rc.f_aq_dark_adapt_qp = 0;
-    param->rc.f_pb_dark = 1.0;
+    param->rc.f_aq_dark = 1.4;
+    param->rc.f_aq_dark_adapt = 0.5;
+    param->rc.f_aq_dark_adapt_qp = 0.5;
+    param->rc.f_pb_dark = 1.35;
     param->rc.i_lookahead = 40;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
     param->rc.b_stat_read = 0;
     param->rc.psz_stat_in = "x264_2pass.log";
-    param->rc.f_qcompress = 0.6;
+    param->rc.f_qcompress = 0.5;
     param->rc.f_qblur = 0.5;
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
-    param->rc.f_mb_tree_strength = 0.4;
-    param->rc.b_mb_tree_vstr = 1;
+    param->rc.f_mb_tree_strength = 0.5;
+    param->rc.b_mb_tree_vstr = 0;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -443,29 +443,29 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     /* */
     param->analyse.intra = X264_ANALYSE_I4x4 | X264_ANALYSE_I8x8;
     param->analyse.inter = X264_ANALYSE_I4x4 | X264_ANALYSE_I8x8
-                         | X264_ANALYSE_PSUB16x16 | X264_ANALYSE_BSUB16x16;
-    param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_SPATIAL;
-    param->analyse.i_me_method = X264_ME_HEX;
-    param->analyse.f_psy_rd = 1.0;
+                         | X264_ANALYSE_PSUB16x16 | X264_ANALYSE_BSUB16x16 | X264_ANALYSE_PSUB8x8;
+    param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
+    param->analyse.i_me_method = X264_ME_UMH;
+    param->analyse.f_psy_rd = 0.34;
     param->analyse.b_psy = 1;
     param->analyse.b_dynamic_psy = 1;
-    param->analyse.i_psy_end = 39;
-    param->analyse.f_psy_trellis = 0;
-    param->analyse.i_me_range = 16;
-    param->analyse.i_subpel_refine = 7;
+    param->analyse.i_psy_end = 37;
+    param->analyse.f_psy_trellis = 1.3;
+    param->analyse.i_me_range = 104;
+    param->analyse.i_subpel_refine = 10;
     param->analyse.b_mixed_references = 1;
     param->analyse.b_chroma_me = 1;
     param->analyse.i_mv_range_thread = -1;
     param->analyse.i_mv_range = -1; // set from level_idc
     param->analyse.i_chroma_qp_offset = 0;
-    param->analyse.b_fast_pskip = 1;
+    param->analyse.b_fast_pskip = 0;
     param->analyse.b_weighted_bipred = 1;
     param->analyse.i_weighted_pred = X264_WEIGHTP_SMART;
     param->analyse.b_dct_decimate = 1;
     param->analyse.b_transform_8x8 = 1;
-    param->analyse.i_trellis = 1;
-    param->analyse.i_luma_deadzone[0] = 21;
-    param->analyse.i_luma_deadzone[1] = 11;
+    param->analyse.i_trellis = 2;
+    param->analyse.i_luma_deadzone[0] = 6;
+    param->analyse.i_luma_deadzone[1] = 6;
     param->analyse.b_psnr = 0;
     param->analyse.b_ssim = 0;
 
