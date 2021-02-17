@@ -409,8 +409,8 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 9;
-    param->rc.f_ip_factor = 1.1;
-    param->rc.f_pb_factor = 1.1;
+    param->rc.f_ip_factor = 1.2;
+    param->rc.f_pb_factor = 1.2;
     param->rc.b_pb_dynamic = 1;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
     param->rc.f_aq_strength = 0.84;
@@ -448,7 +448,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.i_me_method = X264_ME_UMH;
     param->analyse.f_psy_rd = 0.34;
     param->analyse.b_psy = 1;
-    param->analyse.b_dynamic_psy = 1;
+    param->analyse.b_dynamic_psy = 0;
     param->analyse.i_psy_end = 37;
     param->analyse.f_psy_trellis = 1.3;
     param->analyse.i_me_range = 104;
