@@ -386,7 +386,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->i_scenecut_threshold = 20;
     param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
     param->i_bframe_bias = 12;
-    param->i_bframe_bias_aq = -24;
+    param->i_bframe_bias_aq = -30;
     param->i_bframe_pyramid = X264_B_PYRAMID_NORMAL;
     param->b_interlaced = 0;
     param->b_constrained_intra = 0;
@@ -409,18 +409,18 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 9;
-    param->rc.f_ip_factor = 1.2;
+    param->rc.f_ip_factor = 1.26;
     param->rc.f_pb_factor = 1.2;
     param->rc.b_pb_dynamic = 1;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
-    param->rc.f_aq_strength = 0.84;
-    param->rc.f_aq_b_factor = 0.84;
-    param->rc.f_aq_psy = 0.1;
+    param->rc.f_aq_strength = 0.85;
+    param->rc.f_aq_b_factor = 0.85;
+    param->rc.f_aq_psy = 0.2;
     param->rc.f_aq_psy_dark = 1.0;
     param->rc.f_aq_dark = 1.4;
     param->rc.f_aq_dark_adapt = 0.5;
     param->rc.f_aq_dark_adapt_qp = 0.5;
-    param->rc.f_pb_dark = 1.35;
+    param->rc.f_pb_dark = 1.3;
     param->rc.i_lookahead = 40;
 
     param->rc.b_stat_write = 0;
