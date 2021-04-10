@@ -393,7 +393,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
 
     param->b_deblocking_filter = 1;
     param->i_deblocking_filter_alphac0 = 0;
-    param->i_deblocking_filter_beta = 3;
+    param->i_deblocking_filter_beta = 1;
 
     param->b_cabac = 1;
     param->i_cabac_init_idc = 0;
