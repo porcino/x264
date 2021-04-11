@@ -416,7 +416,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_aq_strength = 0.85;
     param->rc.f_aq_b_factor = 0.85;
     param->rc.f_aq_psy = 0.2;
-    param->rc.f_aq_psy_dark = 1.0;
+    param->rc.f_aq_psy_dark = 0.4;
     param->rc.f_aq_dark = 1.4;
     param->rc.f_aq_dark_adapt = 0.5;
     param->rc.f_aq_dark_adapt_qp = 0.5;
@@ -433,7 +433,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
     param->rc.f_mb_tree_strength = 0.5;
-    param->rc.b_mb_tree_vstr = 0;
+    param->rc.b_mb_tree_vstr = 1;
 
     /* Log */
     param->pf_log = x264_log_default;
