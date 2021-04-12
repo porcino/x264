@@ -421,7 +421,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_aq_dark_adapt = 0.5;
     param->rc.f_aq_dark_adapt_qp = 0.5;
     param->rc.f_pb_dark = 1.3;
-    param->rc.i_lookahead = 40;
+    param->rc.i_lookahead = 17;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
@@ -433,7 +433,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
     param->rc.f_mb_tree_strength = 0.5;
-    param->rc.b_mb_tree_vstr = 1;
+    param->rc.b_mb_tree_vstr = 3;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -450,7 +450,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.b_psy = 1;
     param->analyse.b_dynamic_psy = 0;
     param->analyse.i_psy_end = 37;
-    param->analyse.f_psy_trellis = 1.3;
+    param->analyse.f_psy_trellis = 0.8;
     param->analyse.i_me_range = 104;
     param->analyse.i_subpel_refine = 10;
     param->analyse.b_mixed_references = 1;
@@ -1364,7 +1364,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT("mbtree-strength")
         p->rc.f_mb_tree_strength = atof(value);
     OPT("mbtree-vstr")
-        p->rc.b_mb_tree_vstr = x264_clip3( atoi(value), 0, 2 );
+        p->rc.b_mb_tree_vstr = x264_clip3( atoi(value), 0, 3 );
     OPT("qblur")
         p->rc.f_qblur = atof(value);
     OPT2("cplxblur", "cplx-blur")
