@@ -1364,7 +1364,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT("mbtree-strength")
         p->rc.f_mb_tree_strength = atof(value);
     OPT("mbtree-vstr")
-        p->rc.b_mb_tree_vstr = atobool(value);
+        p->rc.b_mb_tree_vstr = x264_clip3( atoi(value), 0, 2 );
     OPT("qblur")
         p->rc.f_qblur = atof(value);
     OPT2("cplxblur", "cplx-blur")
