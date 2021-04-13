@@ -408,7 +408,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_rf_constant = 26;
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
-    param->rc.i_qp_step = 9;
+    param->rc.i_qp_step = 19;
     param->rc.f_ip_factor = 1.25;
     param->rc.f_pb_factor = 1.2;
     param->rc.b_pb_dynamic = 1;
