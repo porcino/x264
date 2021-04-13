@@ -421,7 +421,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_aq_dark_adapt = 0.5;
     param->rc.f_aq_dark_adapt_qp = 0.5;
     param->rc.f_pb_dark = 1.3;
-    param->rc.i_lookahead = 17;
+    param->rc.i_lookahead = 60;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
