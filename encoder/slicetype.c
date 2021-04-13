@@ -1047,7 +1047,7 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
             float log2_ratio = x264_log2(intra_cost + propagate_cost) - x264_log2(intra_cost) + weightdelta;
             tree_avg = strength * log2_ratio;
             if( h->param.rc.b_mb_tree_vstr > 0 && h->param.rc.b_mb_tree_vstr < 3 && !IS_X264_TYPE_I( frame->i_type ) && !h->param.rc.b_stat_write)
-                tree_avg *= sin(tree_avg - 0.3) * pow(0.3, tree_avg - 0.3) + 0.5;
+                tree_avg *= sin(tree_avg - 2) * pow(0.6, tree_avg + 1.5) + 0.5;
             frame->f_qp_offset[mb_index] = frame->f_qp_offset_aq[mb_index] - tree_avg;
         }
     }

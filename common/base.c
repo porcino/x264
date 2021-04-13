@@ -382,11 +382,11 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->i_frame_reference = 6;
     param->i_keyint_max = 500;
     param->i_keyint_min = X264_KEYINT_MIN_AUTO;
-    param->i_bframe = 9;
+    param->i_bframe = 7;
     param->i_scenecut_threshold = 20;
     param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
     param->i_bframe_bias = 12;
-    param->i_bframe_bias_aq = -30;
+    param->i_bframe_bias_aq = -19;
     param->i_bframe_pyramid = X264_B_PYRAMID_NORMAL;
     param->b_interlaced = 0;
     param->b_constrained_intra = 0;
@@ -409,7 +409,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 9;
-    param->rc.f_ip_factor = 1.26;
+    param->rc.f_ip_factor = 1.25;
     param->rc.f_pb_factor = 1.2;
     param->rc.b_pb_dynamic = 1;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
@@ -421,7 +421,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_aq_dark_adapt = 0.5;
     param->rc.f_aq_dark_adapt_qp = 0.5;
     param->rc.f_pb_dark = 1.3;
-    param->rc.i_lookahead = 60;
+    param->rc.i_lookahead = 96;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
@@ -433,7 +433,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
     param->rc.f_mb_tree_strength = 0.5;
-    param->rc.b_mb_tree_vstr = 3;
+    param->rc.b_mb_tree_vstr = 1;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -446,9 +446,9 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
                          | X264_ANALYSE_PSUB16x16 | X264_ANALYSE_BSUB16x16 | X264_ANALYSE_PSUB8x8;
     param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
     param->analyse.i_me_method = X264_ME_UMH;
-    param->analyse.f_psy_rd = 0.34;
+    param->analyse.f_psy_rd = 0.4;
     param->analyse.b_psy = 1;
-    param->analyse.b_dynamic_psy = 0;
+    param->analyse.b_dynamic_psy = 1;
     param->analyse.i_psy_end = 37;
     param->analyse.f_psy_trellis = 0.8;
     param->analyse.i_me_range = 104;
