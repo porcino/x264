@@ -1,7 +1,7 @@
 /*****************************************************************************
  * base.h: misc common functions (bit depth independent)
  *****************************************************************************
- * Copyright (C) 2003-2020 x264 project
+ * Copyright (C) 2003-2021 x264 project
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Loren Merritt <lorenm@u.washington.edu>
@@ -75,6 +75,17 @@ typedef union { x264_uint128_t i; uint64_t q[2]; uint32_t d[4]; uint16_t w[8]; u
 #define CP32(dst,src) M32(dst) = M32(src)
 #define CP64(dst,src) M64(dst) = M64(src)
 #define CP128(dst,src) M128(dst) = M128(src)
+
+/* Macros for memory constraints of inline asm */
+#if defined(__GNUC__) && __GNUC__ >= 8 && !defined(__clang__) && !defined(__INTEL_COMPILER)
+#define MEM_FIX(x, t, s) (*(t (*)[s])(x))
+#define MEM_DYN(x, t) (*(t (*)[])(x))
+#else
+//older versions of gcc prefer casting to structure instead of array
+#define MEM_FIX(x, t, s) (*(struct { t a[s]; } (*))(x))
+//let's set an arbitrary large constant size
+#define MEM_DYN(x, t) MEM_FIX(x, t, 4096)
+#endif
 
 /****************************************************************************
  * Constants

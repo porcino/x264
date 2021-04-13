@@ -1,7 +1,7 @@
 /*****************************************************************************
  * analyse.c: macroblock analysis
  *****************************************************************************
- * Copyright (C) 2003-2020 x264 project
+ * Copyright (C) 2003-2021 x264 project
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Loren Merritt <lorenm@u.washington.edu>
@@ -223,10 +223,10 @@ void x264_analyse_weight_frame( x264_t *h, int end )
         if( h->sh.weight[j][0].weightfn )
         {
             x264_frame_t *frame = h->fref[0][j];
-            int width = frame->i_width[0] + 2*PADH;
+            int width = frame->i_width[0] + PADH2;
             int i_padv = PADV << PARAM_INTERLACED;
             int offset, height;
-            pixel *src = frame->filtered[0][0] - frame->i_stride[0]*i_padv - PADH;
+            pixel *src = frame->filtered[0][0] - frame->i_stride[0]*i_padv - PADH_ALIGN;
             height = X264_MIN( 16 + end + i_padv, h->fref[0][j]->i_lines[0] + i_padv*2 ) - h->fenc->i_lines_weighted;
             offset = h->fenc->i_lines_weighted*frame->i_stride[0];
             h->fenc->i_lines_weighted += height;
@@ -234,7 +234,7 @@ void x264_analyse_weight_frame( x264_t *h, int end )
                 for( int k = j; k < h->i_ref[0]; k++ )
                     if( h->sh.weight[k][0].weightfn )
                     {
-                        pixel *dst = h->fenc->weighted[k] - h->fenc->i_stride[0]*i_padv - PADH;
+                        pixel *dst = h->fenc->weighted[k] - h->fenc->i_stride[0]*i_padv - PADH_ALIGN;
                         x264_weight_scale_plane( h, dst + offset, frame->i_stride[0],
                                                  src + offset, frame->i_stride[0],
                                                  width, height, &h->sh.weight[k][0] );
@@ -450,7 +450,7 @@ static void mb_analyse_init( x264_t *h, x264_mb_analysis_t *a, int qp )
                 IS_INTRA( h->mb.i_mb_type_topleft ) ||
                 IS_INTRA( h->mb.i_mb_type_topright ) ||
                 (h->sh.i_type == SLICE_TYPE_P && IS_INTRA( h->fref[0][0]->mb_type[h->mb.i_mb_xy] )) ||
-                (h->mb.i_mb_xy - h->sh.i_first_mb < 3*(h->stat.frame.i_mb_count[I_4x4] + h->stat.frame.i_mb_count[I_8x8] + h->stat.frame.i_mb_count[I_16x16])) )
+                (h->mb.i_mb_xy - h->sh.i_first_mb < 3*(h->stat.frame.i_mb_count[I_4x4] + h->stat.frame.i_mb_count[I_8x8] + h->stat.frame.i_mb_count[I_16x16] + h->stat.frame.i_mb_count[I_PCM])) )
             { /* intra is likely */ }
             else
             {

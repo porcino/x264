@@ -1,7 +1,7 @@
 /*****************************************************************************
  * ratecontrol.c: ratecontrol
  *****************************************************************************
- * Copyright (C) 2005-2020 x264 project
+ * Copyright (C) 2005-2021 x264 project
  *
  * Authors: Loren Merritt <lorenm@u.washington.edu>
  *          Michael Niedermayer <michaelni@gmx.at>
@@ -1892,9 +1892,9 @@ int x264_ratecontrol_end( x264_t *h, int bits, int *filler )
     x264_emms();
 
     h->stat.frame.i_mb_count_skip = mbs[P_SKIP] + mbs[B_SKIP];
-    h->stat.frame.i_mb_count_i = mbs[I_16x16] + mbs[I_8x8] + mbs[I_4x4];
+    h->stat.frame.i_mb_count_i = mbs[I_16x16] + mbs[I_8x8] + mbs[I_4x4] + mbs[I_PCM];
     h->stat.frame.i_mb_count_p = mbs[P_L0] + mbs[P_8x8];
-    for( int i = B_DIRECT; i < B_8x8; i++ )
+    for( int i = B_DIRECT; i <= B_8x8; i++ )
         h->stat.frame.i_mb_count_p += mbs[i];
 
     h->fdec->f_qp_avg_rc = rc->qpa_rc /= h->mb.i_mb_count;
@@ -2413,7 +2413,10 @@ static double clip_qscale( x264_t *h, int pict_type, double q )
                 bframe_cpb_duration += h->fenc->f_planned_cpb_duration[i];
 
             if( bbits * nb > bframe_cpb_duration * rcc->vbv_max_rate )
+            {
                 nb = 0;
+                bframe_cpb_duration = 0;
+            }
             pbbits += nb * bbits;
 
             minigop_cpb_duration = bframe_cpb_duration + fenc_cpb_duration;
