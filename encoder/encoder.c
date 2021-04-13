@@ -1464,7 +1464,7 @@ static void set_aspect_ratio( x264_t *h, x264_param_t *param, int initial )
 /****************************************************************************
  * x264_encoder_open:
  ****************************************************************************/
-x264_t *x264_encoder_open( x264_param_t *param )
+x264_t *x264_encoder_open( x264_param_t *param, void *api )
 {
     x264_t *h;
     char buf[1000], *p;
@@ -1495,6 +1495,9 @@ x264_t *x264_encoder_open( x264_param_t *param )
         x264_param_cleanup( param );
         param->param_free( param );
     }
+
+    /* Save pointer to bit depth independent interface */
+    h->api = api;
 
 #if HAVE_INTEL_DISPATCHER
     x264_intel_dispatcher_override();
@@ -1970,7 +1973,7 @@ static int nal_end( x264_t *h )
      * While undefined padding wouldn't actually affect the output, it makes valgrind unhappy. */
     memset( end, 0xff, 64 );
     if( h->param.nalu_process )
-        h->param.nalu_process( h, nal, h->fenc->opaque );
+        h->param.nalu_process( (x264_t *)h->api, nal, h->fenc->opaque );
     h->out.i_nal++;
 
     return nal_check_buffer( h );
