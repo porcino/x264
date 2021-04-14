@@ -403,6 +403,7 @@ typedef struct x264_param_t
         int          b_weighted_bipred; /* implicit weighting for B-frames */
         int          i_direct_mv_pred; /* spatial vs temporal mv prediction */
         int          i_chroma_qp_offset;
+        int          i_chroma_qp_offset_d;
 
         int          i_me_method; /* motion estimation algorithm to use (X264_ME_*) */
         int          i_me_range; /* integer pixel motion estimation search range (from predicted mv) */

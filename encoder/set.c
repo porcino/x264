@@ -493,7 +493,7 @@ void x264_pps_init( x264_pps_t *pps, int i_id, x264_param_t *param, x264_sps_t *
     pps->i_pic_init_qp = param->rc.i_rc_method == X264_RC_ABR || param->b_stitchable ? 26 + QP_BD_OFFSET : SPEC_QP( param->rc.i_qp_constant );
     pps->i_pic_init_qs = 26 + QP_BD_OFFSET;
 
-    pps->i_chroma_qp_index_offset = param->analyse.i_chroma_qp_offset;
+    pps->i_chroma_qp_index_offset = param->analyse.i_chroma_qp_offset_d;
     pps->b_deblocking_filter_control = 1;
     pps->b_constrained_intra_pred = param->b_constrained_intra;
     pps->b_redundant_pic_cnt = 0;
