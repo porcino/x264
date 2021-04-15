@@ -1094,6 +1094,7 @@ static struct option long_options[] =
     { "aq-psy-dark", required_argument, NULL, 0 },
     { "aq-dark",     required_argument, NULL, 0 },
     { "aq-dark-adapt",required_argument, NULL, 0 },
+    { "aq-adapt-qp", required_argument, NULL, 0 },
     { "aq-dark-adapt-qp",required_argument, NULL, 0 },
     { "pb-dark",     required_argument, NULL, 0 },
     { "aq-mode",     required_argument, NULL, 0 },

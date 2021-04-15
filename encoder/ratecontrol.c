@@ -424,7 +424,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
             {
                 double avg_qp_d_den = 0;
                 double avg_qp_d_adapted = avg_qp_d;
-                avg_qp_d_den = 16 * (h->param.rc.f_aq_dark_adapt + 21 / 33) / (-1 * avg_qp_d);
+                avg_qp_d_den = 16.f * (h->param.rc.f_aq_dark_adapt + 21.f / 33.f) / (-1.f * avg_qp_d);
                 if ( avg_qp_d_den > 1)
                 {
                     avg_qp_d_adapted = 0;
@@ -432,17 +432,17 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                         for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
                         { 
                             int mb_xy = mb_x + mb_y*h->mb.i_mb_stride;
-                            avg_qp_d_adapted += frame->f_qp_offset_aq_d[mb_xy] / avg_qp_d_den + (frame->f_qp_offset_aq[mb_xy] - frame->f_qp_offset_aq_d[mb_xy]) / 2;
+                            avg_qp_d_adapted += frame->f_qp_offset_aq_d[mb_xy] / avg_qp_d_den + (frame->f_qp_offset_aq[mb_xy] - frame->f_qp_offset_aq_d[mb_xy]) / 2.f;
                             frame->f_qp_offset_aq_d[mb_xy] /= avg_qp_d_den;
                             if ( h->param.rc.f_aq_dark_adapt_qp > 0 )
-                                frame->f_qp_offset_aq[mb_xy] += avg_qp_d * h->param.rc.f_aq_dark_adapt_qp;
+                                frame->f_qp_offset_aq[mb_xy] += avg_qp * h->param.rc.f_aq_adapt_qp + avg_qp_d * h->param.rc.f_aq_dark_adapt_qp;
                         }
                     avg_qp_d_adapted /= h->mb.i_mb_count;
                 }
                 float bias_qty = 50 - qty * (50 - h->param.i_bframe_bias);
                 float bias_aq_qty = 0 - qty * (0 - h->param.i_bframe_bias_aq);
                 if(avg_qp_d_adapted < 0)
-                    frame->bias_aq = (int)(bias_aq_qty - ((-100 / (avg_qp_d_adapted - 1)) * (bias_aq_qty - bias_qty) / 100));
+                    frame->bias_aq = (int)(bias_aq_qty - ((-100 / (avg_qp_d_adapted - 1.f)) * (bias_aq_qty - bias_qty) / 100));
                 else
                     frame->bias_aq = 0;
             }
