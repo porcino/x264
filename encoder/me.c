@@ -318,8 +318,12 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
     }
 
     int me_qty = h->mb.i_me_method;
+    int me_range_qty = i_me_range;
     if( h->mb.i_me_method == X264_ME_UMH && h->fdec->quality == 1.f )
+    {
         me_qty = X264_ME_HEX;
+        me_range_qty *= 13 / 8;
+    }
     switch( me_qty )
     {
         case X264_ME_DIA:
@@ -348,7 +352,7 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
         {
             /* diamond search, radius 1 */
             bcost <<= 4;
-            int i = i_me_range;
+            int i = me_range_qty;
             do
             {
                 COST_MV_X4_DIR( 0,-1, 0,1, -1,0, 1,0, costs );
@@ -366,7 +370,7 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
     me_hex2:
             /* hexagon search, radius 2 */
     #if 0
-            for( i = 0; i < i_me_range/2; i++ )
+            for( i = 0; i < me_range_qty/2; i++ )
             {
                 omx = bmx; omy = bmy;
                 COST_MV( omx-2, omy   );
@@ -401,7 +405,7 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
                 bmy += hex2[dir+1][1];
 
                 /* half hexagon, not overlapping the previous iteration */
-                for( i = (i_me_range>>1) - 1; i > 0 && CHECK_MVRANGE(bmx, bmy); i-- )
+                for( i = (me_range_qty>>1) - 1; i > 0 && CHECK_MVRANGE(bmx, bmy); i-- )
                 {
                     COST_MV_X3_DIR( hex2[dir+0][0], hex2[dir+0][1],
                                     hex2[dir+1][0], hex2[dir+1][1],

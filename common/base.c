@@ -400,7 +400,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
 
     param->rc.i_rc_method = X264_RC_CRF;
     param->rc.i_bitrate = 0;
-    param->rc.f_rate_tolerance = 1.0;
+    param->rc.f_rate_tolerance = 0.2;
     param->rc.i_vbv_max_bitrate = 0;
     param->rc.i_vbv_buffer_size = 0;
     param->rc.f_vbv_buffer_init = 0.9;
@@ -451,7 +451,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.b_dynamic_psy = 1;
     param->analyse.i_psy_end = 37;
     param->analyse.f_psy_trellis = 0.8;
-    param->analyse.i_me_range = 104;
+    param->analyse.i_me_range = 64;
     param->analyse.i_subpel_refine = 10;
     param->analyse.b_mixed_references = 1;
     param->analyse.b_chroma_me = 1;
