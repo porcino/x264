@@ -146,11 +146,12 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
             float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
             float qp_offset = h->fenc->f_qp_offset[h->mb.i_mb_xy];
             float qp_offset_aq = h->fenc->f_qp_offset_aq[h->mb.i_mb_xy];
+            float qp_offset_adapt = h->fenc->f_qp_offset_adapt[h->mb.i_mb_xy];
             float psy_const = h->param.analyse.i_psy_end - (h->param.analyse.i_psy_end / 9.f);
             psy_const = pow(((x264_ratecontrol_qp(h) + qp_offset) - psy_const / 7.f) / psy_const, 4.f) * (-1.f) + 1.f;
             float qp_offset_d = h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy];
             qp_offset_aq -= qp_offset_d;
-            psy_const = psy_const - (psy_const * (qp_offset_aq * h->param.rc.f_aq_psy) * qty) - (psy_const * (qp_offset_d * h->param.rc.f_aq_psy_dark) * qty);
+            psy_const = psy_const - (psy_const * ((qp_offset_aq - qp_offset_d - qp_offset_adapt) * h->param.rc.f_aq_psy) * qty) - (psy_const * (qp_offset_d * h->param.rc.f_aq_psy_dark) * qty);
             if( psy_const < 0 )
                 psy_const = 0;
             satd = (int32_t)(satd * h->mb.i_psy_rd * psy_const * h->mb.i_psy_rd_lambda + 128) >> 8;
