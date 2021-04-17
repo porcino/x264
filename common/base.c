@@ -449,7 +449,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.i_me_method = X264_ME_UMH;
     param->analyse.f_psy_rd = 1.00;
     param->analyse.b_psy = 1;
-    param->analyse.b_dynamic_psy = 1;
+    param->analyse.i_dynamic_psy = 8;
     param->analyse.i_psy_end = 37;
     param->analyse.f_psy_trellis = 0.8;
     param->analyse.i_me_range = 64;
@@ -1268,7 +1268,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT("psy")
         p->analyse.b_psy = atobool(value);
     OPT("dynamic-psy")
-        p->analyse.b_dynamic_psy = atobool(value);
+        p->analyse.i_dynamic_psy = x264_clip3( atoi(value), 0, 8 );
     OPT("psy-end")
         p->analyse.i_psy_end = atoi(value);
     OPT("chroma-me")
@@ -1463,7 +1463,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
     if( p->analyse.b_psy )
     {
         s += sprintf( s, " psy_rd=%.2f:%.2f", p->analyse.f_psy_rd, p->analyse.f_psy_trellis );
-        s += sprintf( s, " dynamic-psy=%d", p->analyse.b_dynamic_psy);
+        s += sprintf( s, " dynamic-psy=%d", p->analyse.i_dynamic_psy);
         s += sprintf( s, " psy-end=%d", p->analyse.i_psy_end );
         if( p->rc.i_aq_mode > 2 )
         {

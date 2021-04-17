@@ -1584,7 +1584,8 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
     }
     float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
     int chroma_offset = h->param.analyse.i_chroma_qp_offset;
-    h->param.analyse.i_chroma_qp_offset_d = chroma_offset + (chroma_offset > 0 ? 12 - chroma_offset : 12) * (1.f - qty);
+    if( chroma_offset < 12)
+        h->param.analyse.i_chroma_qp_offset_d = chroma_offset + (chroma_offset > 0 ? 12 - chroma_offset : 12) * (1.f - qty);
     if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.b_pb_dynamic )
         q *= h->param.rc.f_pb_factor / 10.f * (((float)h->fenc->i_bframes + 30.f * (1.f - qty)) / 16.f) + 1.f;
 

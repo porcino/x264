@@ -889,7 +889,6 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.analyse.b_fast_pskip = 0;
         h->param.analyse.i_noise_reduction = 0;
         h->param.analyse.b_psy = 0;
-        h->param.analyse.b_dynamic_psy = 1;
         h->param.analyse.i_psy_end = 39;
         h->param.i_bframe = 0;
         /* 8x8dct is not useful without RD in CAVLC lossless */
@@ -1354,7 +1353,6 @@ static int validate_parameters( x264_t *h, int b_open )
     BOOLIFY( analyse.b_fast_pskip );
     BOOLIFY( analyse.b_dct_decimate );
     BOOLIFY( analyse.b_psy );
-    BOOLIFY( analyse.b_dynamic_psy );
     BOOLIFY( analyse.b_psnr );
     BOOLIFY( analyse.b_ssim );
     BOOLIFY( rc.b_stat_write );
