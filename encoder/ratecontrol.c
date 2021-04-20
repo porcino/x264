@@ -355,20 +355,17 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
         {
             float bit_depth_correction = 1.f / (1 << (2*(BIT_DEPTH-8)));
             float avg_adj_pow2 = 0.f;
-            int mb_count_nb = h->mb.i_mb_count;
             for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
                 for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
                 {
                     uint32_t energy = ac_energy_mb( h, mb_x, mb_y, frame );
-                    float qp_adj = energy > 0 ? powf( energy * bit_depth_correction + 1, 0.125f ) : 0;
-                    if( qp_adj == 0 )
-                        mb_count_nb -= 1;
+                    float qp_adj = powf( (energy > 0 ? energy : 16384) * bit_depth_correction + 1, 0.125f );
                     frame->f_qp_offset[mb_x + mb_y*h->mb.i_mb_stride] = qp_adj;
                     avg_adj += qp_adj;
                     avg_adj_pow2 += qp_adj * qp_adj;
                 }
-            avg_adj /= mb_count_nb > 0 ? mb_count_nb : 1;
-            avg_adj_pow2 /= mb_count_nb > 0 ? mb_count_nb : 1;
+            avg_adj /= h->mb.i_mb_count;
+            avg_adj_pow2 /= h->mb.i_mb_count;
             strength = h->param.rc.f_aq_strength * avg_adj;
             avg_adj = avg_adj - 0.5f * (avg_adj_pow2 - 14.f) / avg_adj;
         }
