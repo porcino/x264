@@ -400,7 +400,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
 
     param->rc.i_rc_method = X264_RC_CRF;
     param->rc.i_bitrate = 0;
-    param->rc.f_rate_tolerance = 0.2;
+    param->rc.f_rate_tolerance = 1;
     param->rc.i_vbv_max_bitrate = 0;
     param->rc.i_vbv_buffer_size = 0;
     param->rc.f_vbv_buffer_init = 0.9;
@@ -415,25 +415,25 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
     param->rc.f_aq_strength = 0.85;
     param->rc.f_aq_b_factor = 0.85;
-    param->rc.f_aq_psy = -0.02;
-    param->rc.f_aq_psy_dark = 0.4;
+    param->rc.f_aq_psy = -0.06;
+    param->rc.f_aq_psy_dark = 0.2;
     param->rc.f_aq_dark = 1.2;
     param->rc.f_aq_dark_adapt = 0.5;
     param->rc.f_aq_adapt_qp = 0.5;
     param->rc.f_aq_dark_adapt_qp = 0.5;
     param->rc.f_pb_dark = 1.15;
-    param->rc.i_lookahead = 96;
+    param->rc.i_lookahead = 24;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
     param->rc.b_stat_read = 0;
     param->rc.psz_stat_in = "x264_2pass.log";
-    param->rc.f_qcompress = 0.5;
+    param->rc.f_qcompress = 0.53;
     param->rc.f_qblur = 0.5;
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
-    param->rc.f_mb_tree_strength = 0.5;
+    param->rc.f_mb_tree_strength = 0.47;
     param->rc.b_mb_tree_vstr = 1;
 
     /* Log */
