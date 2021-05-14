@@ -635,7 +635,6 @@ static int param_apply_tune( x264_param_t *param, const char *tune )
         else if( len == 9 && !strncasecmp( tune, "animation", 9 ) )
         {
             if( psy_tuning_used++ ) goto psy_failure;
-            param->i_frame_reference = param->i_frame_reference > 1 ? param->i_frame_reference*2 : 1;
             param->i_bframe += 2;
             param->i_deblocking_filter_alphac0 = 1;
             param->rc.f_pb_factor = 1.3;
