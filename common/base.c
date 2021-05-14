@@ -636,25 +636,45 @@ static int param_apply_tune( x264_param_t *param, const char *tune )
         {
             if( psy_tuning_used++ ) goto psy_failure;
             param->i_frame_reference = param->i_frame_reference > 1 ? param->i_frame_reference*2 : 1;
-            param->i_deblocking_filter_alphac0 = 1;
-            param->i_deblocking_filter_beta = 1;
-            param->analyse.f_psy_rd = 0.4;
-            param->rc.f_aq_strength = 0.6;
             param->i_bframe += 2;
+            param->i_deblocking_filter_alphac0 = 1;
+            param->rc.f_pb_factor = 1.3;
+            param->rc.f_ip_factor = 1.35;
+            param->rc.f_pb_dark = 1.3;
+            param->i_bframe_bias_aq = -20;
+            param->rc.f_aq_strength = 1.4;
+            param->rc.f_qcompress = 0.63;
+            param->analyse.f_psy_trellis = 0.15;
+            param->analyse.f_psy_rd = 0.10;
+            param->rc.f_aq_psy = 0.40;
+            param->rc.f_aq_psy_dark = 0.00;
+            param->rc.f_mb_tree_strength = 0.30;
+            param->rc.f_aq_dark = 0.8;
+            param->rc.f_aq_dark_adapt = 0.3;
+            param->rc.f_aq_adapt_qp = 0.05;
+            param->rc.f_aq_dark_adapt = 1.00;
+            param->rc.f_aq_b_factor = 1.00;
         }
         else if( len == 5 && !strncasecmp( tune, "grain", 5 ) )
         {
             if( psy_tuning_used++ ) goto psy_failure;
-            param->i_deblocking_filter_alphac0 = -2;
-            param->i_deblocking_filter_beta = -2;
-            param->analyse.f_psy_trellis = 0.25;
+            param->i_deblocking_filter_alphac0 = -1;
             param->analyse.b_dct_decimate = 0;
-            param->rc.f_pb_factor = 1.1;
-            param->rc.f_ip_factor = 1.1;
-            param->rc.f_aq_strength = 0.5;
-            param->analyse.i_luma_deadzone[0] = 6;
-            param->analyse.i_luma_deadzone[1] = 6;
-            param->rc.f_qcompress = 0.8;
+            param->rc.f_pb_factor = 1.4;
+            param->rc.f_ip_factor = 1.35;
+            param->rc.f_pb_dark = 1.4;
+            param->i_bframe_bias_aq = -20;
+            param->rc.f_qcompress = 0.65;
+            param->analyse.f_psy_rd = 0.10;
+            param->rc.f_aq_psy = 2.00;
+            param->rc.f_aq_psy_dark = -2.00;
+            param->rc.f_mb_tree_strength = 0.19;
+            param->rc.i_lookahead = 48;
+            param->rc.f_aq_dark = 0.8;
+            param->rc.f_aq_dark_adapt = 0.3;
+            param->rc.f_aq_adapt_qp = 0.05;
+            param->rc.f_aq_dark_adapt = 1.00;
+            param->rc.f_aq_b_factor = 1.26;
         }
         else if( len == 10 && !strncasecmp( tune, "stillimage", 10 ) )
         {
