@@ -1287,7 +1287,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT("psy")
         p->analyse.b_psy = atobool(value);
     OPT("dynamic-psy")
-        p->analyse.i_dynamic_psy = x264_clip3( atoi(value), 0, 8 );
+        p->analyse.i_dynamic_psy = x264_clip3( atoi(value), 0, 9 );
     OPT("psy-end")
         p->analyse.i_psy_end = atoi(value);
     OPT("chroma-me")

@@ -155,6 +155,8 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
                 if( h->param.analyse.i_dynamic_psy > 4 )
                 {
                     float limit_psy = 1.f - (h->param.analyse.i_dynamic_psy - 4) * 0.2;
+                    if ( h->param.analyse.i_dynamic_psy == 9 && h->sh.i_type == SLICE_TYPE_B )
+                        psy_const /= h->param.rc.f_pb_factor * 1.5;
                     psy_const = psy_const < limit_psy ? limit_psy : psy_const;
                 }
             }
