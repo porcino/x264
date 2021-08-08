@@ -410,19 +410,21 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 19;
     param->rc.f_ip_factor = 1.2;
-    param->rc.f_pb_factor = 1.2;
+    param->rc.f_pb_factor = 1.25;
     param->rc.b_pb_dynamic = 1;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
-    param->rc.f_aq_strength = 0.85;
-    param->rc.f_aq_b_factor = 0.85;
-    param->rc.f_aq_psy = -0.06;
+    param->rc.f_aq_strength = 1.3;
+    param->rc.f_aq_b_factor = 1.15;
+    param->rc.f_aq_psy = 0.1;
     param->rc.f_aq_psy_dark = 0.2;
     param->rc.f_aq_dark = 1.2;
-    param->rc.f_aq_dark_adapt = 0.5;
-    param->rc.f_aq_adapt_qp = 0.5;
+    param->rc.f_aq_adapt = 0.7;
+    param->rc.f_aq_dark_adapt = 1.5;
+    param->rc.f_aq_adapt_qp = 0.3;
     param->rc.f_aq_dark_adapt_qp = 0.5;
-    param->rc.f_pb_dark = 1.15;
-    param->rc.i_lookahead = 24;
+    param->rc.f_pb_dark = 1.3;
+    param->rc.f_frameboost = 0;
+    param->rc.i_lookahead = 48;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
@@ -434,7 +436,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
     param->rc.f_mb_tree_strength = 0.47;
-    param->rc.b_mb_tree_vstr = 1;
+    param->rc.b_mb_tree_vstr = 2;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -447,15 +449,15 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
                          | X264_ANALYSE_PSUB16x16 | X264_ANALYSE_BSUB16x16 | X264_ANALYSE_PSUB8x8;
     param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
     param->analyse.i_me_method = X264_ME_UMH;
-    param->analyse.f_psy_rd = 1.00;
+    param->analyse.f_psy_rd = 0.7;
     param->analyse.b_psy = 1;
-    param->analyse.i_dynamic_psy = 8;
+    param->analyse.i_dynamic_psy = 9;
     param->analyse.i_psy_end = 37;
     param->analyse.f_psy_trellis = 0.8;
     param->analyse.i_me_range = 64;
     param->analyse.i_subpel_refine = 10;
     param->analyse.b_mixed_references = 1;
-    param->analyse.b_chroma_me = 1;
+    param->analyse.b_chroma_me = 0;
     param->analyse.i_mv_range_thread = -1;
     param->analyse.i_mv_range = -1; // set from level_idc
     param->analyse.i_chroma_qp_offset = 0;
@@ -1287,7 +1289,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT("psy")
         p->analyse.b_psy = atobool(value);
     OPT("dynamic-psy")
-        p->analyse.i_dynamic_psy = x264_clip3( atoi(value), 0, 8 );
+        p->analyse.i_dynamic_psy = x264_clip3( atoi(value), 0, 10 );
     OPT("psy-end")
         p->analyse.i_psy_end = atoi(value);
     OPT("chroma-me")
@@ -1357,6 +1359,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.f_aq_psy_dark = atof(value);
     OPT("aq-dark")
         p->rc.f_aq_dark = atof(value);
+    OPT("aq-adapt")
+        p->rc.f_aq_adapt = atof(value);
     OPT("aq-dark-adapt")
         p->rc.f_aq_dark_adapt = atof(value);
     OPT("aq-adapt-qp")
@@ -1365,6 +1369,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.f_aq_dark_adapt_qp = atof(value);
     OPT("pb-dark")
         p->rc.f_pb_dark = atof(value);
+    OPT("frameboost")
+        p->rc.f_frameboost = atof(value);
     OPT("pass")
     {
         int pass = x264_clip3( atoi(value), 0, 3 );
@@ -1551,8 +1557,10 @@ char *x264_param2string( x264_param_t *p, int b_res )
     if( p->rc.i_rc_method == X264_RC_ABR || p->rc.i_rc_method == X264_RC_CRF )
     {
         if( p->rc.i_rc_method == X264_RC_CRF )
+        {
             s += sprintf( s, " crf=%.1f", p->rc.f_rf_constant );
-        else
+            s += sprintf( s, " frameboost=%.1f", p->rc.f_frameboost );
+        } else
             s += sprintf( s, " bitrate=%d ratetol=%.1f",
                           p->rc.i_bitrate, p->rc.f_rate_tolerance );
         s += sprintf( s, " qcomp=%.2f qpmin=%d qpmax=%d qpstep=%d",
@@ -1593,6 +1601,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
         if( p->rc.i_aq_mode > 2 )
         {
             s += sprintf( s, " aq-dark=%.2f", p->rc.f_aq_dark );
+            s += sprintf( s, " aq-adapt=%.2f", p->rc.f_aq_adapt );
             s += sprintf( s, " aq-dark-adapt=%.2f", p->rc.f_aq_dark_adapt );
             s += sprintf( s, " aq-adapt-qp=%.2f", p->rc.f_aq_adapt_qp );
             s += sprintf( s, " aq-dark-adapt-qp=%.2f", p->rc.f_aq_dark_adapt_qp );

@@ -416,32 +416,36 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 if( h->frames.b_have_lowres )
                     frame->i_inv_qscale_factor[mb_xy] = x264_exp2fix8(qp_adj);
             }
-        if ( h->param.rc.f_aq_dark_adapt > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
+        if ( h->param.rc.f_aq_adapt > 0 && h->param.rc.f_aq_dark_adapt > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
             avg_qp /= h->mb.i_mb_count;
             avg_qp_d /= h->mb.i_mb_count;
             if ( avg_qp_d < 0)
             {
+                double avg_qp_den = 0;
                 double avg_qp_d_den = 0;
                 double avg_qp_d_adapted = avg_qp_d;
+                avg_qp_den = 16.f * (h->param.rc.f_aq_adapt + 21.f / 33.f) / (-1.f * avg_qp);
                 avg_qp_d_den = 16.f * (h->param.rc.f_aq_dark_adapt + 21.f / 33.f) / (-1.f * avg_qp_d);
-                if ( avg_qp_d_den > 1)
-                {
-                    avg_qp_d_adapted = 0;
-                    for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
-                        for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
-                        { 
-                            int mb_xy = mb_x + mb_y*h->mb.i_mb_stride;
-                            avg_qp_d_adapted += frame->f_qp_offset_aq_d[mb_xy] / avg_qp_d_den + (frame->f_qp_offset_aq[mb_xy] - frame->f_qp_offset_aq_d[mb_xy]) / 2.f;
-                            frame->f_qp_offset_aq_d[mb_xy] /= avg_qp_d_den;
-                            if ( h->param.rc.f_aq_dark_adapt_qp > 0 || h->param.rc.f_aq_adapt_qp > 0)
-                            {
-                                frame->f_qp_offset_adapt[mb_xy] = avg_qp * h->param.rc.f_aq_adapt_qp + avg_qp_d * h->param.rc.f_aq_dark_adapt_qp;
-                                frame->f_qp_offset_aq[mb_xy] += frame->f_qp_offset_adapt[mb_xy];
-                            }
+                if ( avg_qp_den < 1)
+                    avg_qp_den = 1.f;
+                if ( avg_qp_d_den < 1)
+                    avg_qp_d_den = 1.f;
+                avg_qp_d_adapted = 0;
+                for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
+                    for( int mb_x = 0; mb_x < h->mb.i_mb_width; mb_x++ )
+                    { 
+                        int mb_xy = mb_x + mb_y*h->mb.i_mb_stride;
+                        avg_qp_d_adapted += frame->f_qp_offset_aq_d[mb_xy] / avg_qp_d_den + (frame->f_qp_offset_aq[mb_xy] - frame->f_qp_offset_aq_d[mb_xy]) / 2.f;
+                        frame->f_qp_offset_aq[mb_xy] = ((frame->f_qp_offset_aq[mb_xy] - frame->f_qp_offset_aq_d[mb_xy]) / avg_qp_den) + frame->f_qp_offset_aq_d[mb_xy] / avg_qp_d_den;
+                        frame->f_qp_offset_aq_d[mb_xy] /= avg_qp_d_den;
+                        if ( h->param.rc.f_aq_dark_adapt_qp > 0 || h->param.rc.f_aq_adapt_qp > 0)
+                        {
+                            frame->f_qp_offset_adapt[mb_xy] = avg_qp * h->param.rc.f_aq_adapt_qp + avg_qp_d * h->param.rc.f_aq_dark_adapt_qp;
+                            frame->f_qp_offset_aq[mb_xy] += frame->f_qp_offset_adapt[mb_xy];
                         }
-                    avg_qp_d_adapted /= h->mb.i_mb_count;
-                }
+                    }
+                avg_qp_d_adapted /= h->mb.i_mb_count;
                 float bias_qty = 50 - qty * (50 - h->param.i_bframe_bias);
                 float bias_aq_qty = 0 - qty * (0 - h->param.i_bframe_bias_aq);
                 if(avg_qp_d_adapted < 0)
@@ -2628,6 +2632,14 @@ static float rate_estimate_qscale( x264_t *h )
 
             if( h->param.rc.i_rc_method == X264_RC_CRF )
             {
+                float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
+                if ( h->param.rc.f_frameboost > 0 &&  qty < 1 )
+                {
+                    double base_cplx = h->mb.i_mb_count * (h->param.i_bframe ? 120 : 80);
+                    float qcomp_b = h->param.rc.f_qcompress + (1.0-h->param.rc.f_qcompress) * h->param.rc.f_frameboost * (1.0-qty);
+                    double mbtree_offset = h->param.rc.b_mb_tree ? (1.0-qcomp_b)*13.5 : 0;
+                    rcc->rate_factor_constant = pow( base_cplx, 1 - rcc->qcompress ) / qp2qscale( h->param.rc.f_rf_constant + mbtree_offset + QP_BD_OFFSET );
+                }
                 q = get_qscale( h, &rce, rcc->rate_factor_constant, h->fenc->i_frame );
             }
             else
