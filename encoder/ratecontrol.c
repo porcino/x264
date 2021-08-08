@@ -1574,18 +1574,6 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
     if( i_force_qp != X264_QP_AUTO )
         q = i_force_qp - 1;
 
-    if( h->sh.i_type != SLICE_TYPE_B)
-    {
-        if (q > h->param.analyse.i_psy_end)
-        {
-            h->fdec->quality = (float)(1.f - (q - h->param.analyse.i_psy_end) / ((h->param.rc.i_qp_max + h->param.analyse.i_psy_end) / 2.f - h->param.analyse.i_psy_end));
-            h->fdec->quality = h->fdec->quality > 0 ? h->fdec->quality : 0;
-        }
-        else
-            h->fdec->quality = 1.f;
-        if( !(h->fdec->quality > 0) )
-            h->fdec->quality = 0.01;
-    }
     float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
     int chroma_offset = h->param.analyse.i_chroma_qp_offset;
     if( chroma_offset < 12)
@@ -1909,6 +1897,18 @@ int x264_ratecontrol_end( x264_t *h, int bits, int *filler )
 
     h->fdec->f_qp_avg_rc = rc->qpa_rc /= h->mb.i_mb_count;
     h->fdec->f_qp_avg_aq = (float)rc->qpa_aq / h->mb.i_mb_count;
+    if( h->sh.i_type != SLICE_TYPE_B)
+    {
+        if (h->fdec->f_qp_avg_aq > h->param.analyse.i_psy_end)
+        {
+            h->fdec->quality = (float)(1.f - (h->fdec->f_qp_avg_aq - h->param.analyse.i_psy_end) / ((h->param.rc.i_qp_max + h->param.analyse.i_psy_end) / 2.f - h->param.analyse.i_psy_end));
+            h->fdec->quality = h->fdec->quality > 0 ? h->fdec->quality : 0;
+        }
+        else
+            h->fdec->quality = 1.f;
+        if( !(h->fdec->quality > 0) )
+            h->fdec->quality = 0.01;
+    }
     h->fdec->f_crf_avg = h->param.rc.f_rf_constant + h->fdec->f_qp_avg_rc - rc->qp_novbv;
 
     if( h->param.rc.b_stat_write )
