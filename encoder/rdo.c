@@ -141,7 +141,7 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
             int dc = h->pixf.sad[size]( fdec, FDEC_STRIDE, (pixel*)x264_zero, 0 ) >> 1;
             satd = abs(h->pixf.satd[size]( fdec, FDEC_STRIDE, (pixel*)x264_zero, 0 ) - dc - cached_satd( h, size, x, y ));
         }
-        if( h->param.analyse.i_dynamic_psy > 0 )
+        if( h->param.analyse.i_dynamic_psy > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
             float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
             float qp_offset = h->fenc->f_qp_offset[h->mb.i_mb_xy];
