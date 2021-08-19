@@ -148,18 +148,17 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
             float qp_offset_aq = h->fenc->f_qp_offset_aq[h->mb.i_mb_xy];
             float qp_offset_adapt = h->fenc->f_qp_offset_adapt[h->mb.i_mb_xy];
             float psy_const = 1.f;
-            if( h->param.analyse.i_dynamic_psy > 1 && h->param.analyse.i_dynamic_psy != 3 )
+            float limit_psy = 0;
+            if( h->param.analyse.i_dynamic_psy > 1 && h->param.analyse.i_dynamic_psy != 3 && h->param.analyse.i_dynamic_psy < 11)
             {
                 psy_const = h->param.analyse.i_psy_end - (h->param.analyse.i_psy_end / 9.f);
                 psy_const = pow(((x264_ratecontrol_qp(h) + qp_offset) - psy_const / 7.f) / psy_const, 4.f) * (-1.f) + 1.f;
-                if( h->param.analyse.i_dynamic_psy > 4 )
-                {
-                    float limit_psy = 1.f - ((h->param.analyse.i_dynamic_psy < 10 ? h->param.analyse.i_dynamic_psy : 8) - 4) * 0.2;
-                    if ( h->param.analyse.i_dynamic_psy >= 9 && h->sh.i_type == SLICE_TYPE_B )
-                        psy_const /= h->param.rc.f_pb_factor * 2.f;
-                    psy_const = psy_const < limit_psy ? limit_psy : psy_const;
-                }
             }
+            if( h->param.analyse.i_dynamic_psy > 4 && h->param.analyse.i_dynamic_psy < 12 )
+                limit_psy = 1.f - ((h->param.analyse.i_dynamic_psy < 10 ? h->param.analyse.i_dynamic_psy : 8) - 4) * 0.2;
+            if ( h->param.analyse.i_dynamic_psy >= 9 && h->sh.i_type == SLICE_TYPE_B )
+                psy_const /= h->param.rc.f_pb_factor * 2.f;
+            psy_const = psy_const < limit_psy ? limit_psy : psy_const;
             float qp_offset_d = h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy];
             qp_offset_aq -= qp_offset_d;
             psy_const = psy_const - (psy_const * ((qp_offset_aq - qp_offset_d - qp_offset_adapt) * h->param.rc.f_aq_psy) * (h->param.rc.f_aq_psy > 0 ? qty : 1.f + 1.f * (1.f - qty))) - (psy_const * (qp_offset_d * h->param.rc.f_aq_psy_dark) * (h->param.rc.f_aq_psy_dark > 0 ? qty : 1.f));
@@ -740,7 +739,7 @@ int quant_trellis_cabac( x264_t *h, dctcoef *dct,
     memcpy( &level_state1, cabac_state+8, sizeof(uint16_t) );
 #define TRELLIS_ARGS unquant_mf, zigzag, lambda2, last_nnz, orig_coefs, quant_coefs, dct,\
                      cabac_state_sig, cabac_state_last, level_state0, level_state1
-    float dynamic_psy_ratio = h->param.analyse.i_dynamic_psy > 2 ? 300 / (pow((x264_ratecontrol_qp( h ) - 20) / 3, 4) + 300) : 1.f;
+    float dynamic_psy_ratio = h->param.analyse.i_dynamic_psy > 2 && h->param.analyse.i_dynamic_psy < 5 ? 300 / (pow((x264_ratecontrol_qp( h ) - 20) / 3, 4) + 300) : 1.f;
     if( num_coefs == 16 && !dc )
         if( b_chroma || !h->mb.i_psy_trellis )
             return h->quantf.trellis_cabac_4x4( TRELLIS_ARGS, b_ac );
@@ -797,7 +796,7 @@ int quant_trellis_cabac( x264_t *h, dctcoef *dct,
         if( !quant_coefs[i] )\
         {\
             /* no need to calculate ssd of 0s: it's the same in all nodes.\
-             * no need to modify level_tree for ctx=0: it starts with an infinite loop of 0s.
+             * no need to modify level_tree for ctx=0: it starts with an infinite loop of 0s.\
              * subtracting from one score is equivalent to adding to the rest. */\
             if( !ctx_hi )\
             {\

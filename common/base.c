@@ -207,7 +207,7 @@ typedef struct {
     void *ptr[];
 } strdup_buffer;
 
-#define BUFFER_OFFSET offsetof(strdup_buffer, ptr)
+#define BUFFER_OFFSET (int)offsetof(strdup_buffer, ptr)
 #define BUFFER_DEFAULT_SIZE 16
 
 char *x264_param_strdup( x264_param_t *param, const char *src )
@@ -380,19 +380,19 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
 
     /* Encoder parameters */
     param->i_frame_reference = 6;
-    param->i_keyint_max = 500;
+    param->i_keyint_max = 480;
     param->i_keyint_min = X264_KEYINT_MIN_AUTO;
     param->i_bframe = 7;
     param->i_scenecut_threshold = 20;
     param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
-    param->i_bframe_bias = 19;
+    param->i_bframe_bias = 13;
     param->i_bframe_bias_aq = -19;
     param->i_bframe_pyramid = X264_B_PYRAMID_NORMAL;
     param->b_interlaced = 0;
     param->b_constrained_intra = 0;
 
     param->b_deblocking_filter = 1;
-    param->i_deblocking_filter_alphac0 = 0;
+    param->i_deblocking_filter_alphac0 = 1;
     param->i_deblocking_filter_beta = 1;
 
     param->b_cabac = 1;
@@ -400,7 +400,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
 
     param->rc.i_rc_method = X264_RC_CRF;
     param->rc.i_bitrate = 0;
-    param->rc.f_rate_tolerance = 1;
+    param->rc.f_rate_tolerance = 0.5;
     param->rc.i_vbv_max_bitrate = 0;
     param->rc.i_vbv_buffer_size = 0;
     param->rc.f_vbv_buffer_init = 0.9;
@@ -409,21 +409,21 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 19;
-    param->rc.f_ip_factor = 1.2;
-    param->rc.f_pb_factor = 1.25;
+    param->rc.f_ip_factor = 1.1;
+    param->rc.f_pb_factor = 1.1;
     param->rc.b_pb_dynamic = 1;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
-    param->rc.f_aq_strength = 1.3;
-    param->rc.f_aq_b_factor = 1.15;
-    param->rc.f_aq_psy = 0.1;
-    param->rc.f_aq_psy_dark = 0.2;
-    param->rc.f_aq_dark = 1.2;
-    param->rc.f_aq_adapt = 0.7;
-    param->rc.f_aq_dark_adapt = 1.5;
-    param->rc.f_aq_adapt_qp = 0.3;
+    param->rc.f_aq_strength = 1.7;
+    param->rc.f_aq_b_factor = 1.0;
+    param->rc.f_aq_psy = 0.2;
+    param->rc.f_aq_psy_dark = 0;
+    param->rc.f_aq_dark = 1.0;
+    param->rc.f_aq_adapt = 0.1;
+    param->rc.f_aq_dark_adapt = 1.0;
+    param->rc.f_aq_adapt_qp = 0.2;
     param->rc.f_aq_dark_adapt_qp = 0.5;
-    param->rc.f_pb_dark = 1.3;
-    param->rc.f_frameboost = 0;
+    param->rc.f_pb_dark = 1.2;
+    param->rc.f_frameboost = 1;
     param->rc.i_lookahead = 48;
 
     param->rc.b_stat_write = 0;
@@ -435,8 +435,8 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
-    param->rc.f_mb_tree_strength = 0.47;
-    param->rc.b_mb_tree_vstr = 2;
+    param->rc.f_mb_tree_strength = 0.44;
+    param->rc.b_mb_tree_vstr = 1;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -449,11 +449,11 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
                          | X264_ANALYSE_PSUB16x16 | X264_ANALYSE_BSUB16x16 | X264_ANALYSE_PSUB8x8;
     param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
     param->analyse.i_me_method = X264_ME_UMH;
-    param->analyse.f_psy_rd = 0.7;
+    param->analyse.f_psy_rd = 0.6;
     param->analyse.b_psy = 1;
-    param->analyse.i_dynamic_psy = 9;
+    param->analyse.i_dynamic_psy = 10;
     param->analyse.i_psy_end = 37;
-    param->analyse.f_psy_trellis = 0.8;
+    param->analyse.f_psy_trellis = 0.7;
     param->analyse.i_me_range = 64;
     param->analyse.i_subpel_refine = 10;
     param->analyse.b_mixed_references = 1;
@@ -482,6 +482,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     memset( param->cqm_8ic, 16, sizeof( param->cqm_8ic ) );
     memset( param->cqm_8pc, 16, sizeof( param->cqm_8pc ) );
 
+	param->b_open_gop = 1;
     param->b_repeat_headers = 1;
     param->b_annexb = 1;
     param->b_aud = 0;
@@ -637,23 +638,10 @@ static int param_apply_tune( x264_param_t *param, const char *tune )
         else if( len == 9 && !strncasecmp( tune, "animation", 9 ) )
         {
             if( psy_tuning_used++ ) goto psy_failure;
+            param->i_frame_reference = param->i_frame_reference > 1 ? param->i_frame_reference+2 : 1;
+            param->analyse.f_psy_rd = param->analyse.f_psy_rd / 2.0;
             param->i_bframe += 2;
-            param->i_deblocking_filter_alphac0 = 1;
-            param->rc.f_pb_factor = 1.3;
-            param->rc.f_ip_factor = 1.35;
-            param->rc.f_pb_dark = 1.3;
-            param->i_bframe_bias_aq = -20;
-            param->rc.f_aq_strength = 1.4;
-            param->rc.f_qcompress = 0.63;
-            param->analyse.f_psy_trellis = 0.15;
-            param->analyse.f_psy_rd = 0.10;
-            param->rc.f_aq_psy = 0.40;
-            param->rc.f_aq_psy_dark = 0.00;
-            param->rc.f_mb_tree_strength = 0.30;
-            param->rc.f_aq_dark = 0.8;
-            param->rc.f_aq_dark_adapt = 0.3;
-            param->rc.f_aq_adapt_qp = 0.05;
-            param->rc.f_aq_dark_adapt = 1.00;
+            param->analyse.f_psy_trellis = param->analyse.f_psy_trellis / 2.0;
             param->rc.f_aq_b_factor = 1.00;
         }
         else if( len == 5 && !strncasecmp( tune, "grain", 5 ) )
@@ -664,17 +652,12 @@ static int param_apply_tune( x264_param_t *param, const char *tune )
             param->rc.f_pb_factor = 1.4;
             param->rc.f_ip_factor = 1.35;
             param->rc.f_pb_dark = 1.4;
-            param->i_bframe_bias_aq = -20;
             param->rc.f_qcompress = 0.65;
             param->analyse.f_psy_rd = 0.10;
             param->rc.f_aq_psy = 2.00;
-            param->rc.f_aq_psy_dark = -2.00;
+            param->rc.f_aq_psy_dark = 1.00;
             param->rc.f_mb_tree_strength = 0.19;
-            param->rc.i_lookahead = 48;
-            param->rc.f_aq_dark = 0.8;
-            param->rc.f_aq_dark_adapt = 0.3;
             param->rc.f_aq_adapt_qp = 0.05;
-            param->rc.f_aq_dark_adapt = 1.00;
             param->rc.f_aq_b_factor = 1.26;
         }
         else if( len == 10 && !strncasecmp( tune, "stillimage", 10 ) )
@@ -849,7 +832,7 @@ REALIGN_STACK int x264_param_apply_profile( x264_param_t *param, const char *pro
 static int parse_enum( const char *arg, const char * const *names, int *dst )
 {
     for( int i = 0; names[i]; i++ )
-        if( !strcasecmp( arg, names[i] ) )
+        if( *names[i] && !strcasecmp( arg, names[i] ) )
         {
             *dst = i;
             return 0;
@@ -957,7 +940,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     if( 0 );
     OPT("asm")
     {
-        p->cpu = isdigit(value[0]) ? atoi(value) :
+        p->cpu = isdigit(value[0]) ? (uint32_t)atoi(value) :
                  !strcasecmp(value, "auto") || atobool(value) ? x264_cpu_detect() : 0;
         if( b_error )
         {
@@ -1047,6 +1030,32 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     {
         p->vui.i_chroma_loc = atoi(value);
         b_error = ( p->vui.i_chroma_loc < 0 || p->vui.i_chroma_loc > 5 );
+    }
+    OPT("mastering-display")
+    {
+        if( strcasecmp( value, "undef" ) )
+        {
+            b_error |= sscanf( value, "G(%d,%d)B(%d,%d)R(%d,%d)WP(%d,%d)L(%"SCNd64",%"SCNd64")",
+                               &p->mastering_display.i_green_x, &p->mastering_display.i_green_y,
+                               &p->mastering_display.i_blue_x, &p->mastering_display.i_blue_y,
+                               &p->mastering_display.i_red_x, &p->mastering_display.i_red_y,
+                               &p->mastering_display.i_white_x, &p->mastering_display.i_white_y,
+                               &p->mastering_display.i_display_max, &p->mastering_display.i_display_min ) != 10;
+            p->mastering_display.b_mastering_display = !b_error;
+        }
+        else
+            p->mastering_display.b_mastering_display = 0;
+    }
+    OPT("cll")
+    {
+        if( strcasecmp( value, "undef" ) )
+        {
+            b_error |= sscanf( value, "%d,%d",
+                               &p->content_light_level.i_max_cll, &p->content_light_level.i_max_fall ) != 2;
+            p->content_light_level.b_cll = !b_error;
+        }
+        else
+            p->content_light_level.b_cll = 0;
     }
     OPT("alternative-transfer")
         b_error |= parse_enum( value, x264_transfer_names, &p->i_alternative_transfer );
@@ -1289,7 +1298,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT("psy")
         p->analyse.b_psy = atobool(value);
     OPT("dynamic-psy")
-        p->analyse.i_dynamic_psy = x264_clip3( atoi(value), 0, 10 );
+        p->analyse.i_dynamic_psy = x264_clip3( atoi(value), 0, 12 );
     OPT("psy-end")
         p->analyse.i_psy_end = atoi(value);
     OPT("chroma-me")
@@ -1459,7 +1468,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
  ****************************************************************************/
 char *x264_param2string( x264_param_t *p, int b_res )
 {
-    int len = 1000;
+    int len = 2000;
     char *buf, *s;
     if( p->rc.psz_zones )
         len += strlen(p->rc.psz_zones);
@@ -1584,6 +1593,16 @@ char *x264_param2string( x264_param_t *p, int b_res )
     if( p->crop_rect.i_left | p->crop_rect.i_top | p->crop_rect.i_right | p->crop_rect.i_bottom )
         s += sprintf( s, " crop_rect=%d,%d,%d,%d", p->crop_rect.i_left, p->crop_rect.i_top,
                                                    p->crop_rect.i_right, p->crop_rect.i_bottom );
+    if( p->mastering_display.b_mastering_display )
+        s += sprintf( s, " mastering-display=G(%d,%d)B(%d,%d)R(%d,%d)WP(%d,%d)L(%"PRId64",%"PRId64")",
+                      p->mastering_display.i_green_x, p->mastering_display.i_green_y,
+                      p->mastering_display.i_blue_x, p->mastering_display.i_blue_y,
+                      p->mastering_display.i_red_x, p->mastering_display.i_red_y,
+                      p->mastering_display.i_white_x, p->mastering_display.i_white_y,
+                      p->mastering_display.i_display_max, p->mastering_display.i_display_min );
+    if( p->content_light_level.b_cll )
+        s += sprintf( s, " cll=%d,%d",
+                      p->content_light_level.i_max_cll, p->content_light_level.i_max_fall );
     if( p->i_frame_packing >= 0 )
         s += sprintf( s, " frame-packing=%d", p->i_frame_packing );
 

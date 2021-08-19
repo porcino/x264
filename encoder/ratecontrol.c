@@ -416,7 +416,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 if( h->frames.b_have_lowres )
                     frame->i_inv_qscale_factor[mb_xy] = x264_exp2fix8(qp_adj);
             }
-        if ( h->param.rc.f_aq_adapt > 0 && h->param.rc.f_aq_dark_adapt > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
+        if ( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
             avg_qp /= h->mb.i_mb_count;
             avg_qp_d /= h->mb.i_mb_count;
@@ -425,8 +425,14 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 double avg_qp_den = 0;
                 double avg_qp_d_den = 0;
                 double avg_qp_d_adapted = avg_qp_d;
-                avg_qp_den = 16.f * (h->param.rc.f_aq_adapt + 21.f / 33.f) / (-1.f * avg_qp);
-                avg_qp_d_den = 16.f * (h->param.rc.f_aq_dark_adapt + 21.f / 33.f) / (-1.f * avg_qp_d);
+                if ( h->param.rc.f_aq_adapt > 0 )
+                    avg_qp_den = 16.f * (h->param.rc.f_aq_adapt + 21.f / 33.f) / (-1.f * avg_qp);
+                else
+                    avg_qp_den = 1.f;
+                if ( h->param.rc.f_aq_dark_adapt > 0 )
+                    avg_qp_d_den = 16.f * (h->param.rc.f_aq_dark_adapt + 21.f / 33.f) / (-1.f * avg_qp_d);
+                else
+                    avg_qp_d_den = 1.f;
                 if ( avg_qp_den < 1)
                     avg_qp_den = 1.f;
                 if ( avg_qp_d_den < 1)
@@ -1574,6 +1580,19 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
     if( i_force_qp != X264_QP_AUTO )
         q = i_force_qp - 1;
 
+    if( h->sh.i_type != SLICE_TYPE_B)
+    {
+        if (q > h->param.analyse.i_psy_end)
+        {
+            h->fdec->quality = (float)(1.f - (q - h->param.analyse.i_psy_end) / ((h->param.rc.i_qp_max + h->param.analyse.i_psy_end) / 2.f - h->param.analyse.i_psy_end));
+            h->fdec->quality = h->fdec->quality > 0 ? h->fdec->quality : 0;
+        }
+        else
+            h->fdec->quality = 1.f;
+        if( !(h->fdec->quality > 0) )
+            h->fdec->quality = 0.01;
+    }
+
     float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
     int chroma_offset = h->param.analyse.i_chroma_qp_offset;
     if( chroma_offset < 12)
@@ -1901,13 +1920,13 @@ int x264_ratecontrol_end( x264_t *h, int bits, int *filler )
     {
         if (h->fdec->f_qp_avg_aq > h->param.analyse.i_psy_end)
         {
-            h->fdec->quality = (float)(1.f - (h->fdec->f_qp_avg_aq - h->param.analyse.i_psy_end) / ((h->param.rc.i_qp_max + h->param.analyse.i_psy_end) / 2.f - h->param.analyse.i_psy_end));
-            h->fdec->quality = h->fdec->quality > 0 ? h->fdec->quality : 0;
+            h->fdec->quality_boost = (float)(1.f - (h->fdec->f_qp_avg_aq - h->param.analyse.i_psy_end) / ((h->param.rc.i_qp_max + h->param.analyse.i_psy_end) / 2.f - h->param.analyse.i_psy_end));
+            h->fdec->quality_boost = h->fdec->quality_boost > 0 ? h->fdec->quality_boost : 0;
         }
         else
-            h->fdec->quality = 1.f;
-        if( !(h->fdec->quality > 0) )
-            h->fdec->quality = 0.01;
+            h->fdec->quality_boost = 1.f;
+        if( !(h->fdec->quality_boost > 0) )
+            h->fdec->quality_boost = 0.01;
     }
     h->fdec->f_crf_avg = h->param.rc.f_rf_constant + h->fdec->f_qp_avg_rc - rc->qp_novbv;
 
@@ -2632,7 +2651,7 @@ static float rate_estimate_qscale( x264_t *h )
 
             if( h->param.rc.i_rc_method == X264_RC_CRF )
             {
-                float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
+                float qty = h->fdec->quality_boost > 0 ? h->fdec->quality_boost : 1.f;
                 if ( h->param.rc.f_frameboost > 0 &&  qty < 1 )
                 {
                     double base_cplx = h->mb.i_mb_count * (h->param.i_bframe ? 120 : 80);
