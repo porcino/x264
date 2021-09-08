@@ -409,21 +409,20 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 19;
-    param->rc.f_ip_factor = 1.1;
+    param->rc.f_ip_factor = 1.15;
     param->rc.f_pb_factor = 1.1;
     param->rc.b_pb_dynamic = 1;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
-    param->rc.f_aq_strength = 1.7;
-    param->rc.f_aq_b_factor = 1.0;
-    param->rc.f_aq_psy = 0.2;
+    param->rc.f_aq_strength = 1.2;
+    param->rc.f_aq_psy = 0.15;
     param->rc.f_aq_psy_dark = 0;
-    param->rc.f_aq_dark = 1.0;
-    param->rc.f_aq_adapt = 0.1;
-    param->rc.f_aq_dark_adapt = 1.0;
+    param->rc.f_aq_dark = 1.5;
+    param->rc.f_aq_adapt = 0.4;
+    param->rc.f_aq_dark_adapt = 0.5;
     param->rc.f_aq_adapt_qp = 0.2;
-    param->rc.f_aq_dark_adapt_qp = 0.5;
+    param->rc.f_aq_dark_adapt_qp = 0.4;
     param->rc.f_pb_dark = 1.2;
-    param->rc.f_frameboost = 1;
+    param->rc.f_frameboost = 0;
     param->rc.i_lookahead = 48;
 
     param->rc.b_stat_write = 0;
@@ -436,7 +435,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
     param->rc.f_mb_tree_strength = 0.44;
-    param->rc.b_mb_tree_vstr = 1;
+    param->rc.b_mb_tree_vstr = 2;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -642,7 +641,6 @@ static int param_apply_tune( x264_param_t *param, const char *tune )
             param->analyse.f_psy_rd = param->analyse.f_psy_rd / 2.0;
             param->i_bframe += 2;
             param->analyse.f_psy_trellis = param->analyse.f_psy_trellis / 2.0;
-            param->rc.f_aq_b_factor = 1.00;
         }
         else if( len == 5 && !strncasecmp( tune, "grain", 5 ) )
         {
@@ -658,7 +656,6 @@ static int param_apply_tune( x264_param_t *param, const char *tune )
             param->rc.f_aq_psy_dark = 1.00;
             param->rc.f_mb_tree_strength = 0.19;
             param->rc.f_aq_adapt_qp = 0.05;
-            param->rc.f_aq_b_factor = 1.26;
         }
         else if( len == 10 && !strncasecmp( tune, "stillimage", 10 ) )
         {
@@ -1360,8 +1357,6 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.i_aq_mode = atoi(value);
     OPT("aq-strength")
         p->rc.f_aq_strength = atof(value);
-    OPT("aq-b-factor")
-        p->rc.f_aq_b_factor = atof(value);
     OPT("aq-psy")
         p->rc.f_aq_psy = atof(value);
     OPT("aq-psy-dark")
@@ -1624,7 +1619,6 @@ char *x264_param2string( x264_param_t *p, int b_res )
             s += sprintf( s, " aq-dark-adapt=%.2f", p->rc.f_aq_dark_adapt );
             s += sprintf( s, " aq-adapt-qp=%.2f", p->rc.f_aq_adapt_qp );
             s += sprintf( s, " aq-dark-adapt-qp=%.2f", p->rc.f_aq_dark_adapt_qp );
-            s += sprintf( s, " aq-b-factor=%.2f", p->rc.f_aq_b_factor );
             s += sprintf( s, " pb-dark=%.2f", p->rc.f_pb_dark );
             s += sprintf( s, " b-bias-aq=%d", p->i_bframe_bias_aq );
         }

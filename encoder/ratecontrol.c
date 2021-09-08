@@ -385,13 +385,11 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 {
                     qp_adj = frame->f_qp_offset[mb_xy];
                     qp_adj_d = h->param.rc.f_aq_dark * qty * (1.f - 14.f / (qp_adj * qp_adj));
-                    float qp_b_factor = 1;
                     if( h->sh.i_type == SLICE_TYPE_B )
                     {
                         qp_adj_d *= h->param.rc.f_pb_factor / h->param.rc.f_pb_dark;
-                        qp_b_factor = h->param.rc.f_aq_b_factor * ((-10) / (qp_adj_d - 10));
                     }
-                    qp_adj = strength * qty * (qp_adj - avg_adj) * qp_b_factor + qp_adj_d;
+                    qp_adj = strength * qty * (qp_adj - avg_adj) + qp_adj_d;
                 }
                 else if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE )
                 {
@@ -426,11 +424,11 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 double avg_qp_d_den = 0;
                 double avg_qp_d_adapted = avg_qp_d;
                 if ( h->param.rc.f_aq_adapt > 0 )
-                    avg_qp_den = 16.f * (h->param.rc.f_aq_adapt + 21.f / 33.f) / (-1.f * avg_qp);
+                    avg_qp_den = 11.f * h->param.rc.f_aq_adapt / (-1.f * avg_qp);
                 else
                     avg_qp_den = 1.f;
                 if ( h->param.rc.f_aq_dark_adapt > 0 )
-                    avg_qp_d_den = 16.f * (h->param.rc.f_aq_dark_adapt + 21.f / 33.f) / (-1.f * avg_qp_d);
+                    avg_qp_d_den = 26.f * h->param.rc.f_aq_dark_adapt / (-1.f * avg_qp_d);
                 else
                     avg_qp_d_den = 1.f;
                 if ( avg_qp_den < 1)

@@ -459,7 +459,6 @@ typedef struct x264_param_t
 
         int         i_aq_mode;      /* psy adaptive QP. (X264_AQ_*) */
         float       f_aq_strength;
-        float       f_aq_b_factor;
         float       f_aq_psy;
         float       f_aq_psy_dark;
         float       f_aq_dark;
