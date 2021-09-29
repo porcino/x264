@@ -385,10 +385,6 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 {
                     qp_adj = frame->f_qp_offset[mb_xy];
                     qp_adj_d = h->param.rc.f_aq_dark * qty * (1.f - 14.f / (qp_adj * qp_adj));
-                    if( h->sh.i_type == SLICE_TYPE_B )
-                    {
-                        qp_adj_d *= h->param.rc.f_pb_factor / h->param.rc.f_pb_dark;
-                    }
                     qp_adj = strength * qty * (qp_adj - avg_adj) + qp_adj_d;
                 }
                 else if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE )
@@ -1830,8 +1826,12 @@ int x264_ratecontrol_mb_qp( x264_t *h )
     float qp = h->rc->qpm;
     if( h->param.rc.i_aq_mode )
     {
-         /* MB-tree currently doesn't adjust quantizers in unreferenced frames. */
+        /* MB-tree currently doesn't adjust quantizers in unreferenced frames. */
         float qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy];
+        if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
+        {
+            qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] - h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f - 1.f / h->param.rc.f_aq_b_factor) : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f / h->param.rc.f_aq_b_factor);
+        }
         /* Scale AQ's effect towards zero in emergency mode. */
         if( qp > QP_MAX_SPEC )
             qp_offset *= (QP_MAX - qp) / (QP_MAX - QP_MAX_SPEC);
