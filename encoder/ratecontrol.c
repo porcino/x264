@@ -662,7 +662,7 @@ int x264_reference_build_list_optimal( x264_t *h )
             COPY2_IF_GT( max, refcount[i], bestref, i );
 
         /* FIXME: If there are duplicates from frames other than ref0 then it is possible
-         * that the optimal ordering doesnt place every duplicate. */
+         * that the optimal ordering doesn't place every duplicate. */
 
         refcount[bestref] = -1;
         h->fref[0][ref] = frames[bestref];
@@ -1592,7 +1592,10 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
     if( chroma_offset < 12)
         h->param.analyse.i_chroma_qp_offset_d = chroma_offset + (chroma_offset > 0 ? 12 - chroma_offset : 12) * (1.f - qty);
     if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.b_pb_dynamic )
-        q *= h->param.rc.f_pb_factor / 10.f * (((float)h->fenc->i_bframes + 30.f * (1.f - qty)) / 16.f) + 1.f;
+    {
+        float factor_qty = h->param.rc.f_pb_factor > 1.6f ? h->param.rc.f_pb_factor : h->param.rc.f_pb_factor + ((2.4f - h->param.rc.f_pb_factor) * (1.f - qty));
+        q *= factor_qty / 10.f * ((float)h->fenc->i_bframes / 16.f) + 1.f;
+    }
 
     q = x264_clip3f( q, h->param.rc.i_qp_min, h->param.rc.i_qp_max );
 
@@ -1735,7 +1738,7 @@ int x264_ratecontrol_mb( x264_t *h, int bits )
         float b1 = bits_so_far + predict_row_size_to_end( h, y, rc->qpm ) + size_of_other_slices;
         float trust_coeff = x264_clip3f( bits_so_far / slice_size_planned, 0.0, 1.0 );
 
-        /* Don't increase the row QPs until a sufficent amount of the bits of the frame have been processed, in case a flat */
+        /* Don't increase the row QPs until a sufficient amount of the bits of the frame have been processed, in case a flat */
         /* area at the top of the frame was measured inaccurately. */
         if( trust_coeff < 0.05f )
             qp_max = qp_absolute_max = prev_row_qp;
@@ -2093,7 +2096,9 @@ static double get_qscale(x264_t *h, ratecontrol_entry_t *rce, double rate_factor
     if( h->param.rc.b_mb_tree )
     {
         double timescale = (double)h->sps->vui.i_num_units_in_tick / h->sps->vui.i_time_scale;
-        q = pow( BASE_FRAME_DURATION / CLIP_DURATION(rce->i_duration * timescale), 1 - h->param.rc.f_qcompress );
+        float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
+        float qcomp_b = h->param.rc.f_qcompress + (1.0-h->param.rc.f_qcompress) * h->param.rc.f_frameboost * (1.0-qty);
+        q = pow( BASE_FRAME_DURATION / CLIP_DURATION(rce->i_duration * timescale), 1 - qcomp_b );
     }
     else
         q = pow( rce->blurred_complexity, 1 - rcc->qcompress );
