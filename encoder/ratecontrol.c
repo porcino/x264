@@ -91,6 +91,7 @@ struct x264_ratecontrol_t
     int   qpa_aq;               /* average of macroblocks' qp after aq */
     int   qpa_aq_prev;
     float qp_novbv;             /* QP for the current frame if 1-pass VBV was disabled. */
+    float pb_factor_aq;
 
     /* VBV stuff */
     double buffer_size;
@@ -1591,11 +1592,15 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
     int chroma_offset = h->param.analyse.i_chroma_qp_offset;
     if( chroma_offset < 12)
         h->param.analyse.i_chroma_qp_offset_d = chroma_offset + (chroma_offset > 0 ? 12 - chroma_offset : 12) * (1.f - qty);
-    if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.b_pb_dynamic )
+    if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.f_pb_dynamic > 0 )
     {
-        float factor_qty = h->param.rc.f_pb_factor > 1.6f ? h->param.rc.f_pb_factor : h->param.rc.f_pb_factor + ((2.4f - h->param.rc.f_pb_factor) * (1.f - qty));
-        q *= factor_qty / 10.f * ((float)h->fenc->i_bframes / 16.f) + 1.f;
+        float factor_pb = h->param.rc.f_pb_dynamic > h->param.rc.f_pb_factor ? h->param.rc.f_pb_factor + ((float)rc->bframes / 16.f * (h->param.rc.f_pb_dynamic - h->param.rc.f_pb_factor)) : h->param.rc.f_pb_factor;
+        float factor_qty = factor_pb + ((2.4f - factor_pb) * (1.f - qty));
+        q *= ((factor_qty / h->param.rc.f_pb_factor) - 1.f) / 5.f + 1.f;
+        rc->pb_factor_aq = 1.f - ((1.f - h->param.rc.f_aq_b_factor) * (factor_qty / h->param.rc.f_pb_factor));
     }
+    else
+        rc->pb_factor_aq = h->param.rc.f_aq_b_factor;
 
     q = x264_clip3f( q, h->param.rc.i_qp_min, h->param.rc.i_qp_max );
 
@@ -1833,7 +1838,7 @@ int x264_ratecontrol_mb_qp( x264_t *h )
         float qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy];
         if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
-            qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] - h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f - 1.f / h->param.rc.f_aq_b_factor) : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f / h->param.rc.f_aq_b_factor);
+            qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] - h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f - 1.f / h->rc->pb_factor_aq) : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f / h->param.rc.f_aq_b_factor);
         }
         /* Scale AQ's effect towards zero in emergency mode. */
         if( qp > QP_MAX_SPEC )
@@ -2097,7 +2102,13 @@ static double get_qscale(x264_t *h, ratecontrol_entry_t *rce, double rate_factor
     {
         double timescale = (double)h->sps->vui.i_num_units_in_tick / h->sps->vui.i_time_scale;
         float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
-        float qcomp_b = h->param.rc.f_qcompress + (1.0-h->param.rc.f_qcompress) * h->param.rc.f_frameboost * (1.0-qty);
+        float qcomp_b = h->param.rc.f_qcompress;
+        if ( h->param.rc.f_frameboost > 0 || qty < 1 )
+        {
+            qcomp_b = h->param.rc.f_qcompress + (0.99-h->param.rc.f_qcompress) * h->param.rc.f_frameboost * (1.0-qty);
+            if (qcomp_b < 0.65 && h->param.rc.f_frameboost > 0)
+                qcomp_b += (0.65 - qcomp_b) * (1.f - (h->rc->bframes / 16.f)) * h->param.rc.f_frameboost;
+        }
         q = pow( BASE_FRAME_DURATION / CLIP_DURATION(rce->i_duration * timescale), 1 - qcomp_b );
     }
     else
@@ -2655,10 +2666,12 @@ static float rate_estimate_qscale( x264_t *h )
             if( h->param.rc.i_rc_method == X264_RC_CRF )
             {
                 float qty = h->fdec->quality_boost > 0 ? h->fdec->quality_boost : 1.f;
-                if ( h->param.rc.f_frameboost > 0 &&  qty < 1 )
+                if ( h->param.rc.f_frameboost > 0 || qty < 1 )
                 {
                     double base_cplx = h->mb.i_mb_count * (h->param.i_bframe ? 120 : 80);
-                    float qcomp_b = h->param.rc.f_qcompress + (1.0-h->param.rc.f_qcompress) * h->param.rc.f_frameboost * (1.0-qty);
+                    float qcomp_b = h->param.rc.f_qcompress + (0.99-h->param.rc.f_qcompress) * h->param.rc.f_frameboost * (1.0-qty);
+                    if (qcomp_b < 0.65 && h->param.rc.f_frameboost > 0)
+                        qcomp_b += (0.65 - qcomp_b) * (1.f - (h->rc->bframes / 16.f)) * h->param.rc.f_frameboost;
                     double mbtree_offset = h->param.rc.b_mb_tree ? (1.0-qcomp_b)*13.5 : 0;
                     rcc->rate_factor_constant = pow( base_cplx, 1 - rcc->qcompress ) / qp2qscale( h->param.rc.f_rf_constant + mbtree_offset + QP_BD_OFFSET );
                 }

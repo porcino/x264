@@ -385,7 +385,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->i_bframe = 7;
     param->i_scenecut_threshold = 20;
     param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
-    param->i_bframe_bias = 13;
+    param->i_bframe_bias = 0;
     param->i_bframe_bias_aq = 0;
     param->i_bframe_pyramid = X264_B_PYRAMID_NORMAL;
     param->b_interlaced = 0;
@@ -409,27 +409,27 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 19;
-    param->rc.f_ip_factor = 1.35;
-    param->rc.f_pb_factor = 1.3;
-    param->rc.b_pb_dynamic = 1;
+    param->rc.f_ip_factor = 1.3;
+    param->rc.f_pb_factor = 1.0;
+    param->rc.f_pb_dynamic = 1.9;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
     param->rc.f_aq_strength = 1.3;
     param->rc.f_aq_psy = 0.25;
     param->rc.f_aq_psy_dark = 0;
-    param->rc.f_aq_dark = 1.5;
-    param->rc.f_aq_adapt = 0.4;
+    param->rc.f_aq_dark = 1.4;
+    param->rc.f_aq_adapt = 0.7;
     param->rc.f_aq_dark_adapt = 0.5;
-    param->rc.f_aq_adapt_qp = 0.15;
+    param->rc.f_aq_adapt_qp = 0.1;
     param->rc.f_aq_dark_adapt_qp = 0.4;
-    param->rc.f_aq_b_factor = 0.85;
-    param->rc.f_frameboost = 0;
+    param->rc.f_aq_b_factor = 0.95;
+    param->rc.f_frameboost = 1;
     param->rc.i_lookahead = 48;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
     param->rc.b_stat_read = 0;
     param->rc.psz_stat_in = "x264_2pass.log";
-    param->rc.f_qcompress = 0.54;
+    param->rc.f_qcompress = 0.46;
     param->rc.f_qblur = 0.5;
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
@@ -451,7 +451,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.f_psy_rd = 0.4;
     param->analyse.b_psy = 1;
     param->analyse.i_dynamic_psy = 10;
-    param->analyse.i_psy_end = 37;
+    param->analyse.i_psy_end = 35;
     param->analyse.f_psy_trellis = 0.7;
     param->analyse.i_me_range = 104;
     param->analyse.i_subpel_refine = 10;
@@ -1352,7 +1352,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT2("pbratio", "pb-factor")
         p->rc.f_pb_factor = atof(value);
     OPT("pb-dynamic")
-        p->rc.b_pb_dynamic = atobool(value);
+        p->rc.f_pb_dynamic = atof(value);
     OPT("aq-mode")
         p->rc.i_aq_mode = atoi(value);
     OPT("aq-strength")
@@ -1607,7 +1607,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
         if( p->i_bframe )
         {
             s += sprintf( s, " pb_ratio=%.2f", p->rc.f_pb_factor );
-            s += sprintf( s, " pb-dynamic=%d", p->rc.b_pb_dynamic );
+            s += sprintf( s, " pb-dynamic=%.2f", p->rc.f_pb_dynamic );
         }
         s += sprintf( s, " aq=%d", p->rc.i_aq_mode );
         if( p->rc.i_aq_mode )

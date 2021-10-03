@@ -1190,7 +1190,7 @@ static struct option long_options[] =
     { "aq-adapt-qp",          required_argument, NULL, 0 },
     { "aq-dark-adapt-qp",     required_argument, NULL, 0 },
     { "aq-b-factor",          required_argument, NULL, 0 },
-    { "pb-dynamic",           no_argument,       NULL, 0 },
+    { "pb-dynamic",           required_argument, NULL, 0 },
     { "mbtree-strength",      required_argument, NULL, 0 },
     { "mbtree-vstr",          required_argument, NULL, 0 },
     { "frameboost",           required_argument, NULL, 0 },
