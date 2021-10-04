@@ -403,13 +403,13 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_rate_tolerance = 0.5;
     param->rc.i_vbv_max_bitrate = 0;
     param->rc.i_vbv_buffer_size = 0;
-    param->rc.f_vbv_buffer_init = 0.9;
+    param->rc.f_vbv_buffer_init = 0.4;
     param->rc.i_qp_constant = -1;
     param->rc.f_rf_constant = 26;
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 19;
-    param->rc.f_ip_factor = 1.3;
+    param->rc.f_ip_factor = 1.25;
     param->rc.f_pb_factor = 1.0;
     param->rc.f_pb_dynamic = 1.9;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
@@ -1561,10 +1561,8 @@ char *x264_param2string( x264_param_t *p, int b_res )
     if( p->rc.i_rc_method == X264_RC_ABR || p->rc.i_rc_method == X264_RC_CRF )
     {
         if( p->rc.i_rc_method == X264_RC_CRF )
-        {
             s += sprintf( s, " crf=%.1f", p->rc.f_rf_constant );
-            s += sprintf( s, " frameboost=%.1f", p->rc.f_frameboost );
-        } else
+        else
             s += sprintf( s, " bitrate=%d ratetol=%.1f",
                           p->rc.i_bitrate, p->rc.f_rate_tolerance );
         s += sprintf( s, " qcomp=%.2f qpmin=%d qpmax=%d qpstep=%d",
@@ -1583,6 +1581,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
     else if( p->rc.i_rc_method == X264_RC_CQP )
         s += sprintf( s, " qp=%d", p->rc.i_qp_constant );
 
+    s += sprintf( s, " frameboost=%.1f", p->rc.f_frameboost );
     if( p->rc.i_vbv_buffer_size )
         s += sprintf( s, " nal_hrd=%s filler=%d", x264_nal_hrd_names[p->i_nal_hrd], p->rc.b_filler );
     if( p->crop_rect.i_left | p->crop_rect.i_top | p->crop_rect.i_right | p->crop_rect.i_bottom )
