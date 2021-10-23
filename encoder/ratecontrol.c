@@ -421,7 +421,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 double avg_qp_d_den = 0;
                 double avg_qp_d_adapted = avg_qp_d;
                 if ( h->param.rc.f_aq_adapt > 0 )
-                    avg_qp_den = 11.f * h->param.rc.f_aq_adapt / (-1.f * avg_qp);
+                    avg_qp_den = 24.f * h->param.rc.f_aq_adapt / ((-1.f * avg_qp) + 5.f);
                 else
                     avg_qp_den = 1.f;
                 if ( h->param.rc.f_aq_dark_adapt > 0 )
@@ -1595,12 +1595,13 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
     if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.f_pb_dynamic > 0 )
     {
         float factor_pb = h->param.rc.f_pb_dynamic > h->param.rc.f_pb_factor ? h->param.rc.f_pb_factor + ((float)rc->bframes / 16.f * (h->param.rc.f_pb_dynamic - h->param.rc.f_pb_factor)) : h->param.rc.f_pb_factor;
-        float factor_qty = factor_pb + ((h->param.rc.f_pb_dynamic - factor_pb) * (1.f - qty));
-        q *= ((factor_qty / h->param.rc.f_pb_factor) - 1.f) / 5.f + 1.f;
-        rc->pb_factor_aq = 1.f - ((1.f - h->param.rc.f_aq_b_factor) * (factor_qty / h->param.rc.f_pb_factor));
+        q *= ((factor_pb / h->param.rc.f_pb_factor) - 1.f) / 5.f + 1.f;
+        rc->pb_factor_aq = 1.f - ((1.f - h->param.rc.f_aq_b_factor) * (factor_pb / h->param.rc.f_pb_factor));
     }
     else
         rc->pb_factor_aq = h->param.rc.f_aq_b_factor;
+    if ( h->param.rc.f_frameboost_reduce > 0 && (h->sh.i_type == SLICE_TYPE_B || h->sh.i_type == SLICE_TYPE_P) )
+		q *= 1.f + (h->param.rc.f_frameboost_reduce / 2.f) - (h->param.rc.f_frameboost_reduce * ((float)rc->bframes / (float)h->param.i_bframe));
 
     q = x264_clip3f( q, h->param.rc.i_qp_min, h->param.rc.i_qp_max );
 

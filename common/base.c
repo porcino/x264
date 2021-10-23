@@ -387,7 +387,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
     param->i_bframe_bias = 0;
     param->i_bframe_bias_aq = 0;
-    param->i_bframe_pyramid = X264_B_PYRAMID_NORMAL;
+    param->i_bframe_pyramid = X264_B_PYRAMID_STRICT;
     param->b_interlaced = 0;
     param->b_constrained_intra = 0;
 
@@ -409,27 +409,28 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 19;
-    param->rc.f_ip_factor = 1.25;
+    param->rc.f_ip_factor = 1.15;
     param->rc.f_pb_factor = 1.0;
-    param->rc.f_pb_dynamic = 1.9;
+    param->rc.f_pb_dynamic = 1.6;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
-    param->rc.f_aq_strength = 1.3;
+    param->rc.f_aq_strength = 1.4;
     param->rc.f_aq_psy = 0.25;
-    param->rc.f_aq_psy_dark = 0;
+    param->rc.f_aq_psy_dark = -0.1;
     param->rc.f_aq_dark = 1.4;
-    param->rc.f_aq_adapt = 0.7;
-    param->rc.f_aq_dark_adapt = 0.5;
-    param->rc.f_aq_adapt_qp = 0.1;
-    param->rc.f_aq_dark_adapt_qp = 0.4;
-    param->rc.f_aq_b_factor = 0.95;
-    param->rc.f_frameboost = 1;
+    param->rc.f_aq_adapt = 0.5;
+    param->rc.f_aq_dark_adapt = 1;
+    param->rc.f_aq_adapt_qp = 0.07;
+    param->rc.f_aq_dark_adapt_qp = 0.3;
+    param->rc.f_aq_b_factor = 0.96;
+    param->rc.f_frameboost = 1.0;
+    param->rc.f_frameboost_reduce = 0.06;
     param->rc.i_lookahead = 48;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
     param->rc.b_stat_read = 0;
     param->rc.psz_stat_in = "x264_2pass.log";
-    param->rc.f_qcompress = 0.46;
+    param->rc.f_qcompress = 0.43;
     param->rc.f_qblur = 0.5;
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
@@ -447,13 +448,13 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.inter = X264_ANALYSE_I4x4 | X264_ANALYSE_I8x8
                          | X264_ANALYSE_PSUB16x16 | X264_ANALYSE_BSUB16x16 | X264_ANALYSE_PSUB8x8;
     param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
-    param->analyse.i_me_method = X264_ME_HEX;
+    param->analyse.i_me_method = X264_ME_UMH;
     param->analyse.f_psy_rd = 0.4;
     param->analyse.b_psy = 1;
     param->analyse.i_dynamic_psy = 10;
-    param->analyse.i_psy_end = 35;
+    param->analyse.i_psy_end = 37;
     param->analyse.f_psy_trellis = 0.7;
-    param->analyse.i_me_range = 104;
+    param->analyse.i_me_range = 48;
     param->analyse.i_subpel_refine = 10;
     param->analyse.b_mixed_references = 1;
     param->analyse.b_chroma_me = 0;
@@ -1374,7 +1375,9 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT("aq-b-factor")
         p->rc.f_aq_b_factor = atof(value);
     OPT("frameboost")
-        p->rc.f_frameboost = atof(value);
+    {
+        b_error |= sscanf( value, "%f,%f", &p->rc.f_frameboost, &p->rc.f_frameboost_reduce ) != 2;
+    }
     OPT("pass")
     {
         int pass = x264_clip3( atoi(value), 0, 3 );
@@ -1581,7 +1584,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
     else if( p->rc.i_rc_method == X264_RC_CQP )
         s += sprintf( s, " qp=%d", p->rc.i_qp_constant );
 
-    s += sprintf( s, " frameboost=%.1f", p->rc.f_frameboost );
+    s += sprintf( s, " frameboost=%.1f:%.2f", p->rc.f_frameboost, p->rc.f_frameboost_reduce );
     if( p->rc.i_vbv_buffer_size )
         s += sprintf( s, " nal_hrd=%s filler=%d", x264_nal_hrd_names[p->i_nal_hrd], p->rc.b_filler );
     if( p->crop_rect.i_left | p->crop_rect.i_top | p->crop_rect.i_right | p->crop_rect.i_bottom )
