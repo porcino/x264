@@ -382,7 +382,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->i_frame_reference = 6;
     param->i_keyint_max = 480;
     param->i_keyint_min = X264_KEYINT_MIN_AUTO;
-    param->i_bframe = 7;
+    param->i_bframe = 8;
     param->i_scenecut_threshold = 20;
     param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
     param->i_bframe_bias = 0;
@@ -409,28 +409,28 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 19;
-    param->rc.f_ip_factor = 1.15;
-    param->rc.f_pb_factor = 1.0;
-    param->rc.f_pb_dynamic = 1.6;
+    param->rc.f_ip_factor = 1.3;
+    param->rc.f_pb_factor = 0.9;
+    param->rc.f_pb_dynamic = 1.4;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
     param->rc.f_aq_strength = 1.4;
-    param->rc.f_aq_psy = 0.25;
-    param->rc.f_aq_psy_dark = -0.1;
+    param->rc.f_aq_psy = 0.15;
+    param->rc.f_aq_psy_dark = 0.6;
     param->rc.f_aq_dark = 1.4;
     param->rc.f_aq_adapt = 0.5;
-    param->rc.f_aq_dark_adapt = 1;
-    param->rc.f_aq_adapt_qp = 0.07;
+    param->rc.f_aq_dark_adapt = 0.2;
+    param->rc.f_aq_adapt_qp = 0.0;
     param->rc.f_aq_dark_adapt_qp = 0.3;
-    param->rc.f_aq_b_factor = 0.96;
-    param->rc.f_frameboost = 1.0;
+    param->rc.f_aq_b_factor = 1.3;
+    param->rc.f_frameboost = -0.39;
     param->rc.f_frameboost_reduce = 0.06;
-    param->rc.i_lookahead = 48;
+    param->rc.i_lookahead = 30;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
     param->rc.b_stat_read = 0;
     param->rc.psz_stat_in = "x264_2pass.log";
-    param->rc.f_qcompress = 0.43;
+    param->rc.f_qcompress = 0.83;
     param->rc.f_qblur = 0.5;
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
@@ -449,7 +449,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
                          | X264_ANALYSE_PSUB16x16 | X264_ANALYSE_BSUB16x16 | X264_ANALYSE_PSUB8x8;
     param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
     param->analyse.i_me_method = X264_ME_UMH;
-    param->analyse.f_psy_rd = 0.4;
+    param->analyse.f_psy_rd = 0.3;
     param->analyse.b_psy = 1;
     param->analyse.i_dynamic_psy = 10;
     param->analyse.i_psy_end = 37;
@@ -648,15 +648,22 @@ static int param_apply_tune( x264_param_t *param, const char *tune )
             if( psy_tuning_used++ ) goto psy_failure;
             param->i_deblocking_filter_alphac0 = -1;
             param->analyse.b_dct_decimate = 0;
-            param->rc.f_pb_factor = 1.4;
-            param->rc.f_ip_factor = 1.35;
-            param->rc.f_aq_b_factor = 0.84;
-            param->rc.f_qcompress = 0.65;
-            param->analyse.f_psy_rd = 0.10;
-            param->rc.f_aq_psy = 2.00;
-            param->rc.f_aq_psy_dark = 1.00;
+            param->rc.f_qcompress = 0.86;
+            param->rc.f_frameboost = -0.35;
+            param->rc.f_frameboost_reduce = 0.04;
+            param->rc.f_ip_factor = 1.5;
+            param->rc.f_pb_factor = 1.3;
+            param->rc.f_pb_dynamic = 1.9;
+            param->analyse.i_dynamic_psy = 1;
+            param->analyse.f_psy_rd = 0.1;
+            param->analyse.f_psy_trellis = 0.8;
+            param->rc.f_aq_psy = 0.7;
+            param->rc.f_aq_psy_dark = 0;
             param->rc.f_mb_tree_strength = 0.19;
-            param->rc.f_aq_adapt_qp = 0.05;
+            param->rc.f_aq_adapt = 0.5;
+            param->rc.f_aq_dark_adapt = 0.2;
+            param->rc.f_aq_adapt_qp = 0;
+            param->rc.f_aq_dark_adapt_qp = 0.2;
         }
         else if( len == 10 && !strncasecmp( tune, "stillimage", 10 ) )
         {

@@ -143,25 +143,19 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
         }
         if( h->param.analyse.i_dynamic_psy > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
-            float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
-            float qp_offset = h->fenc->f_qp_offset[h->mb.i_mb_xy];
-            float qp_offset_aq = h->fenc->f_qp_offset_aq[h->mb.i_mb_xy];
-            float qp_offset_adapt = h->fenc->f_qp_offset_adapt[h->mb.i_mb_xy];
             float psy_const = 1.f;
             float limit_psy = 0;
             if( h->param.analyse.i_dynamic_psy > 1 && h->param.analyse.i_dynamic_psy != 3 && h->param.analyse.i_dynamic_psy < 11)
             {
                 psy_const = h->param.analyse.i_psy_end - (h->param.analyse.i_psy_end / 9.f);
-                psy_const = pow(((x264_ratecontrol_qp(h) + qp_offset) - psy_const / 7.f) / psy_const, 4.f) * (-1.f) + 1.f;
+                psy_const = pow(((x264_ratecontrol_qp(h) + h->fenc->f_qp_offset[h->mb.i_mb_xy]) - psy_const / 7.f) / psy_const, 4.f) * (-1.f) + 1.f;
             }
             if( h->param.analyse.i_dynamic_psy > 4 && h->param.analyse.i_dynamic_psy < 12 )
                 limit_psy = 1.f - ((h->param.analyse.i_dynamic_psy < 10 ? h->param.analyse.i_dynamic_psy : 8) - 4) * 0.2;
             if ( h->param.analyse.i_dynamic_psy >= 9 && h->sh.i_type == SLICE_TYPE_B )
                 psy_const /= h->param.rc.f_pb_factor * 2.f;
             psy_const = psy_const < limit_psy ? limit_psy : psy_const;
-            float qp_offset_d = h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy];
-            qp_offset_aq -= qp_offset_d;
-            psy_const = psy_const - (psy_const * ((qp_offset_aq - qp_offset_d - qp_offset_adapt) * h->param.rc.f_aq_psy) * (h->param.rc.f_aq_psy > 0 ? qty : 1.f + 1.f * (1.f - qty))) - (psy_const * (qp_offset_d * h->param.rc.f_aq_psy_dark) * (h->param.rc.f_aq_psy_dark > 0 ? qty : 1.f));
+            psy_const = psy_const - (psy_const * (h->fenc->f_qp_offset_aq_s[h->mb.i_mb_xy] * (h->param.rc.f_aq_psy / 10.f))) - (psy_const * (h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * h->param.rc.f_aq_psy_dark));
             if( psy_const < 0 )
                 psy_const = 0;
             satd = (int32_t)(satd * h->mb.i_psy_rd * psy_const * h->mb.i_psy_rd_lambda + 128) >> 8;

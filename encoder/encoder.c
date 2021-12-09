@@ -1197,7 +1197,7 @@ static int validate_parameters( x264_t *h, int b_open )
     h->param.rc.f_aq_dark_adapt_qp = x264_clip3f( h->param.rc.f_aq_dark_adapt_qp, 0, 9 );
     h->param.rc.f_aq_b_factor = x264_clip3f( h->param.rc.f_aq_b_factor, 0.01, 10.0 );
     h->param.rc.f_pb_dynamic = x264_clip3f( h->param.rc.f_pb_dynamic, 0, 9 );
-    h->param.rc.f_frameboost = x264_clip3f( h->param.rc.f_frameboost, 0, 1.0 );
+    h->param.rc.f_frameboost = x264_clip3f( h->param.rc.f_frameboost, -1.0, 1.0 );
     h->param.rc.f_frameboost_reduce = x264_clip3f( h->param.rc.f_frameboost_reduce, 0, 0.5 );
     if( h->param.rc.f_aq_strength == 0 )
         h->param.rc.i_aq_mode = 0;

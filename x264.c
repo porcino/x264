@@ -495,7 +495,7 @@ static void help( x264_param_t *defaults, int longhelp )
         " .mkv -> Matroska\n"
         " .flv -> Flash Video\n"
         " .mp4 -> MP4 if compiled with GPAC or L-SMASH support (%s)\n"
-        "Output bit depth: %s\n."
+        "Output bit depth: %s\n"
         "\n"
         "Options:\n"
         "\n"
@@ -1180,8 +1180,8 @@ static struct option long_options[] =
     { "stitchable",           no_argument,       NULL, 0 },
     { "filler",               no_argument,       NULL, 0 },
     { "b-bias-aq",            required_argument, NULL, 0 },
-    { "dynamic_psy"           no_argument,       NULL, 0 },
-    { "psy-end"               required_argument, NULL, 0 },
+    { "dynamic_psy",          no_argument,       NULL, 0 },
+    { "psy-end",              required_argument, NULL, 0 },
     { "aq-psy",               required_argument, NULL, 0 },
     { "aq-psy-dark",          required_argument, NULL, 0 },
     { "aq-dark",              required_argument, NULL, 0 },
