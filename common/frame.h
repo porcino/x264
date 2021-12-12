@@ -182,6 +182,7 @@ typedef struct x264_frame
     int bias_aq;
     float quality;
     float quality_boost;
+    float avg_qp;
 
 #if HAVE_OPENCL
     x264_frame_opencl_t opencl;

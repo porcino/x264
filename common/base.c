@@ -409,34 +409,36 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_min = 0;
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 19;
-    param->rc.f_ip_factor = 1.3;
+    param->rc.f_ip_factor = 1.2;
     param->rc.f_pb_factor = 0.9;
     param->rc.f_pb_dynamic = 1.4;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
     param->rc.f_aq_strength = 1.4;
-    param->rc.f_aq_psy = 0.15;
+    param->rc.f_aq_psy = 0.14;
     param->rc.f_aq_psy_dark = 0.6;
     param->rc.f_aq_dark = 1.4;
     param->rc.f_aq_adapt = 0.5;
-    param->rc.f_aq_dark_adapt = 0.2;
-    param->rc.f_aq_adapt_qp = 0.0;
+    param->rc.f_aq_dark_adapt = 0.23;
+    param->rc.f_aq_adapt_qp = 0.01;
+    param->rc.f_aq_adapt_tree = 0.4;
     param->rc.f_aq_dark_adapt_qp = 0.3;
     param->rc.f_aq_b_factor = 1.3;
-    param->rc.f_frameboost = -0.39;
-    param->rc.f_frameboost_reduce = 0.06;
-    param->rc.i_lookahead = 30;
+    param->rc.f_frameboost = -0.38;
+    param->rc.f_frameboost_reduce = 0.04;
+    param->rc.i_lookahead = 48;
 
     param->rc.b_stat_write = 0;
     param->rc.psz_stat_out = "x264_2pass.log";
     param->rc.b_stat_read = 0;
     param->rc.psz_stat_in = "x264_2pass.log";
-    param->rc.f_qcompress = 0.83;
+    param->rc.f_qcompress = 0.79;
     param->rc.f_qblur = 0.5;
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
     param->rc.b_mb_tree = 1;
-    param->rc.f_mb_tree_strength = 0.44;
-    param->rc.b_mb_tree_vstr = 1;
+    param->rc.f_mb_tree_strength = 0.5;
+    param->rc.f_mb_tree_curve = 0.1;
+    param->rc.f_mb_tree_drop = 0.3;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -1365,20 +1367,16 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.i_aq_mode = atoi(value);
     OPT("aq-strength")
         p->rc.f_aq_strength = atof(value);
-    OPT("aq-psy")
-        p->rc.f_aq_psy = atof(value);
-    OPT("aq-psy-dark")
-        p->rc.f_aq_psy_dark = atof(value);
     OPT("aq-dark")
         p->rc.f_aq_dark = atof(value);
+    OPT("aq-psy")
+    {
+        b_error |= sscanf( value, "%f,%f", &p->rc.f_aq_psy, &p->rc.f_aq_psy_dark ) != 2;
+    }
     OPT("aq-adapt")
-        p->rc.f_aq_adapt = atof(value);
-    OPT("aq-dark-adapt")
-        p->rc.f_aq_dark_adapt = atof(value);
-    OPT("aq-adapt-qp")
-        p->rc.f_aq_adapt_qp = atof(value);
-    OPT("aq-dark-adapt-qp")
-        p->rc.f_aq_dark_adapt_qp = atof(value);
+    {
+        b_error |= sscanf( value, "%f,%f,%f,%f,%f", &p->rc.f_aq_adapt, &p->rc.f_aq_adapt_qp, &p->rc.f_aq_dark_adapt, &p->rc.f_aq_dark_adapt_qp, &p->rc.f_aq_adapt_tree ) != 5;
+    }
     OPT("aq-b-factor")
         p->rc.f_aq_b_factor = atof(value);
     OPT("frameboost")
@@ -1405,8 +1403,10 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.b_mb_tree = atobool(value);
     OPT("mbtree-strength")
         p->rc.f_mb_tree_strength = atof(value);
-    OPT("mbtree-vstr")
-        p->rc.b_mb_tree_vstr = x264_clip3( atoi(value), 0, 3 );
+    OPT("mbtree-curve")
+    {
+        b_error |= sscanf( value, "%f,%f", &p->rc.f_mb_tree_curve, &p->rc.f_mb_tree_drop ) != 2;
+    }
     OPT("qblur")
         p->rc.f_qblur = atof(value);
     OPT2("cplxblur", "cplx-blur")
@@ -1505,10 +1505,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
         s += sprintf( s, " dynamic-psy=%d", p->analyse.i_dynamic_psy);
         s += sprintf( s, " psy-end=%d", p->analyse.i_psy_end );
         if( p->rc.i_aq_mode > 2 )
-        {
-            s += sprintf( s, " aq-psy=%.2f", p->rc.f_aq_psy );
-            s += sprintf( s, " aq-psy-dark=%.2f", p->rc.f_aq_psy_dark );
-        }
+            s += sprintf( s, " aq-psy=%.2f:%.2f", p->rc.f_aq_psy, p->rc.f_aq_psy_dark );
     }
     s += sprintf( s, " mixed_ref=%d", p->analyse.b_mixed_references );
     s += sprintf( s, " me_range=%d", p->analyse.i_me_range );
@@ -1566,7 +1563,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
     if( p->rc.b_mb_tree )
     {
         s += sprintf( s, " mbtree-strength=%.2f", p->rc.f_mb_tree_strength );
-        s += sprintf( s, " mbtree-vstr=%d", p->rc.b_mb_tree_vstr );
+        s += sprintf( s, " mbtree-curve=%.2f:%.2f", p->rc.f_mb_tree_curve, p->rc.f_mb_tree_drop );
     }
     if( p->rc.i_rc_method == X264_RC_ABR || p->rc.i_rc_method == X264_RC_CRF )
     {
@@ -1624,10 +1621,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
         if( p->rc.i_aq_mode > 2 )
         {
             s += sprintf( s, " aq-dark=%.2f", p->rc.f_aq_dark );
-            s += sprintf( s, " aq-adapt=%.2f", p->rc.f_aq_adapt );
-            s += sprintf( s, " aq-dark-adapt=%.2f", p->rc.f_aq_dark_adapt );
-            s += sprintf( s, " aq-adapt-qp=%.2f", p->rc.f_aq_adapt_qp );
-            s += sprintf( s, " aq-dark-adapt-qp=%.2f", p->rc.f_aq_dark_adapt_qp );
+            s += sprintf( s, " aq-adapt=%.2f:%.2f:%.2f:%.2f:%.2f", p->rc.f_aq_adapt, p->rc.f_aq_adapt_qp, p->rc.f_aq_dark_adapt, p->rc.f_aq_dark_adapt_qp, p->rc.f_aq_adapt_tree );
             s += sprintf( s, " aq-b-factor=%.2f", p->rc.f_aq_b_factor );
             s += sprintf( s, " b-bias-aq=%d", p->i_bframe_bias_aq );
         }

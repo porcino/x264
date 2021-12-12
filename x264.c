@@ -1192,7 +1192,7 @@ static struct option long_options[] =
     { "aq-b-factor",          required_argument, NULL, 0 },
     { "pb-dynamic",           required_argument, NULL, 0 },
     { "mbtree-strength",      required_argument, NULL, 0 },
-    { "mbtree-vstr",          required_argument, NULL, 0 },
+    { "mbtree-curve",         required_argument, NULL, 0 },
     { "frameboost",           required_argument, NULL, 0 },
     { NULL,                   0,                 NULL, 0 }
 };

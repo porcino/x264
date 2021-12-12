@@ -373,7 +373,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
         else
             strength = h->param.rc.f_aq_strength * 1.0397f;
 
-        double avg_qp = 0;
+        frame->avg_qp = 0;
         double avg_qp_d = 0;
         float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
         for( int mb_y = 0; mb_y < h->mb.i_mb_height; mb_y++ )
@@ -410,14 +410,14 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 frame->f_qp_offset_aq[mb_xy] = qp_adj;
                 frame->f_qp_offset_aq_d[mb_xy] = qp_adj_d;
                 frame->f_qp_offset_aq_s[mb_xy] = qp_adj_s;
-                avg_qp += qp_adj;
+                frame->avg_qp += qp_adj;
                 avg_qp_d += qp_adj_d;
                 if( h->frames.b_have_lowres )
                     frame->i_inv_qscale_factor[mb_xy] = x264_exp2fix8(qp_adj);
             }
         if ( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
-            avg_qp /= h->mb.i_mb_count;
+            frame->avg_qp /= h->mb.i_mb_count;
             avg_qp_d /= h->mb.i_mb_count;
             if ( avg_qp_d < 0)
             {
@@ -425,7 +425,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                 double avg_qp_d_den = 0;
                 double avg_qp_d_adapted = avg_qp_d;
                 if ( h->param.rc.f_aq_adapt > 0 )
-                    avg_qp_den = 24.f * h->param.rc.f_aq_adapt / ((-1.f * avg_qp) + 5.f);
+                    avg_qp_den = 24.f * h->param.rc.f_aq_adapt / ((-1.f * frame->avg_qp) + 5.f);
                 else
                     avg_qp_den = 1.f;
                 if ( h->param.rc.f_aq_dark_adapt > 0 )
@@ -445,7 +445,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                         frame->f_qp_offset_aq[mb_xy] = ((frame->f_qp_offset_aq[mb_xy] - frame->f_qp_offset_aq_d[mb_xy]) / avg_qp_den) + frame->f_qp_offset_aq_d[mb_xy] / avg_qp_d_den;
                         frame->f_qp_offset_aq_d[mb_xy] /= avg_qp_d_den;
                         if ( h->param.rc.f_aq_dark_adapt_qp > 0 || h->param.rc.f_aq_adapt_qp > 0)
-                            frame->f_qp_offset_aq[mb_xy] += avg_qp * h->param.rc.f_aq_adapt_qp + avg_qp_d * h->param.rc.f_aq_dark_adapt_qp;
+                            frame->f_qp_offset_aq[mb_xy] += frame->avg_qp * h->param.rc.f_aq_adapt_qp + avg_qp_d * h->param.rc.f_aq_dark_adapt_qp;
                     }
                 avg_qp_d_adapted /= h->mb.i_mb_count;
                 float bias_qty = 30 - qty * (30 - h->param.i_bframe_bias);
