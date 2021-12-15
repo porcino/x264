@@ -412,6 +412,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_ip_factor = 1.2;
     param->rc.f_pb_factor = 0.9;
     param->rc.f_pb_dynamic = 1.4;
+    param->rc.f_pb_low = 1;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
     param->rc.f_aq_strength = 1.4;
     param->rc.f_aq_psy = 0.14;
@@ -423,7 +424,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_aq_adapt_tree = 0.4;
     param->rc.f_aq_dark_adapt_qp = 0.3;
     param->rc.f_aq_b_factor = 1.3;
-    param->rc.f_frameboost = -0.38;
+    param->rc.f_frameboost = 0.6;
     param->rc.f_frameboost_reduce = 0.04;
     param->rc.i_lookahead = 48;
 
@@ -431,7 +432,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.psz_stat_out = "x264_2pass.log";
     param->rc.b_stat_read = 0;
     param->rc.psz_stat_in = "x264_2pass.log";
-    param->rc.f_qcompress = 0.79;
+    param->rc.f_qcompress = 0.5;
     param->rc.f_qblur = 0.5;
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
@@ -439,6 +440,8 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_mb_tree_strength = 0.5;
     param->rc.f_mb_tree_curve = 0.1;
     param->rc.f_mb_tree_drop = 0.3;
+    param->rc.f_mb_curve_low = 1;
+    param->rc.f_mb_tree_low = 0;
 
     /* Log */
     param->pf_log = x264_log_default;
@@ -455,8 +458,8 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.b_psy = 1;
     param->analyse.i_dynamic_psy = 10;
     param->analyse.i_psy_end = 37;
-    param->analyse.f_psy_trellis = 0.7;
-    param->analyse.i_me_range = 48;
+    param->analyse.f_psy_trellis = 0.8;
+    param->analyse.i_me_range = 63;
     param->analyse.i_subpel_refine = 10;
     param->analyse.b_mixed_references = 1;
     param->analyse.b_chroma_me = 0;
@@ -650,8 +653,8 @@ static int param_apply_tune( x264_param_t *param, const char *tune )
             if( psy_tuning_used++ ) goto psy_failure;
             param->i_deblocking_filter_alphac0 = -1;
             param->analyse.b_dct_decimate = 0;
-            param->rc.f_qcompress = 0.86;
-            param->rc.f_frameboost = -0.35;
+            param->rc.f_qcompress = 0.55;
+            param->rc.f_frameboost = 0.55;
             param->rc.f_frameboost_reduce = 0.04;
             param->rc.f_ip_factor = 1.5;
             param->rc.f_pb_factor = 1.3;
@@ -1362,7 +1365,9 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT2("pbratio", "pb-factor")
         p->rc.f_pb_factor = atof(value);
     OPT("pb-dynamic")
-        p->rc.f_pb_dynamic = atof(value);
+    {
+        b_error |= sscanf( value, "%f,%f", &p->rc.f_pb_dynamic, &p->rc.f_pb_low ) != 2;
+    }
     OPT("aq-mode")
         p->rc.i_aq_mode = atoi(value);
     OPT("aq-strength")
@@ -1405,7 +1410,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         p->rc.f_mb_tree_strength = atof(value);
     OPT("mbtree-curve")
     {
-        b_error |= sscanf( value, "%f,%f", &p->rc.f_mb_tree_curve, &p->rc.f_mb_tree_drop ) != 2;
+        b_error |= sscanf( value, "%f,%f,%f,%f", &p->rc.f_mb_tree_curve, &p->rc.f_mb_tree_drop, &p->rc.f_mb_curve_low, &p->rc.f_mb_tree_low ) != 4;
     }
     OPT("qblur")
         p->rc.f_qblur = atof(value);
@@ -1563,7 +1568,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
     if( p->rc.b_mb_tree )
     {
         s += sprintf( s, " mbtree-strength=%.2f", p->rc.f_mb_tree_strength );
-        s += sprintf( s, " mbtree-curve=%.2f:%.2f", p->rc.f_mb_tree_curve, p->rc.f_mb_tree_drop );
+        s += sprintf( s, " mbtree-curve=%.2f:%.2f:%.2f:%.2f", p->rc.f_mb_tree_curve, p->rc.f_mb_tree_drop, p->rc.f_mb_curve_low, p->rc.f_mb_tree_low );
     }
     if( p->rc.i_rc_method == X264_RC_ABR || p->rc.i_rc_method == X264_RC_CRF )
     {
@@ -1613,7 +1618,7 @@ char *x264_param2string( x264_param_t *p, int b_res )
         if( p->i_bframe )
         {
             s += sprintf( s, " pb_ratio=%.2f", p->rc.f_pb_factor );
-            s += sprintf( s, " pb-dynamic=%.2f", p->rc.f_pb_dynamic );
+            s += sprintf( s, " pb-dynamic=%.2f:%.2f", p->rc.f_pb_dynamic, p->rc.f_pb_low );
         }
         s += sprintf( s, " aq=%d", p->rc.i_aq_mode );
         if( p->rc.i_aq_mode )

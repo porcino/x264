@@ -452,6 +452,7 @@ typedef struct x264_param_t
         float       f_ip_factor;
         float       f_pb_factor;
         float       f_pb_dynamic;
+        float       f_pb_low;
 
         /* VBV filler: force CBR VBV and use filler bytes to ensure hard-CBR.
          * Implied by NAL-HRD CBR. */
@@ -472,7 +473,9 @@ typedef struct x264_param_t
         float       f_frameboost_reduce;
         int         b_mb_tree;      /* Macroblock-tree ratecontrol. */
         float       f_mb_tree_curve;
+        float       f_mb_curve_low;
         float       f_mb_tree_drop;
+        float       f_mb_tree_low;
         int         i_lookahead;
 
         /* 2pass */
