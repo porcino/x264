@@ -1048,7 +1048,7 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
             int propagate_cost = (frame->i_propagate_cost[mb_index] * fps_factor + 128) >> 8;
             float log2_ratio = x264_log2(intra_cost + propagate_cost) - x264_log2(intra_cost) + weightdelta;
             tree_avg = strength * log2_ratio;
-            if( !IS_X264_TYPE_I( frame->i_type ) && !h->param.rc.b_stat_write) {
+            if( !IS_X264_TYPE_I( frame->i_type ) ) {
 				float curve = (-1.f) / (pow(curve_qty * 10.f, 2.f) * tree_avg + 1.f) + 1.f;
                 curve *= 1.f / (drop_qty * tree_avg + 1.f);
                 tree_avg *= curve;
