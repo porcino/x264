@@ -1588,23 +1588,27 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
         if( !(h->fdec->quality > 0) )
             h->fdec->quality = 0.01;
     }
-
+    static int n_bf = 0;
     const float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
     int chroma_offset = h->param.analyse.i_chroma_qp_offset;
     if( chroma_offset < 12)
         h->param.analyse.i_chroma_qp_offset_d = chroma_offset + (chroma_offset > 0 ? 12 - chroma_offset : 12) * (1.f - qty);
     if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.f_pb_dynamic > 0 )
     {
+        n_bf += 1;
         float factor_pb = h->param.rc.f_pb_factor + ((float)rc->bframes / 16.f * (h->param.rc.f_pb_dynamic - h->param.rc.f_pb_factor));
         if(h->param.rc.f_pb_low > factor_pb)
             factor_pb += (h->param.rc.f_pb_low - factor_pb) * (1.f-qty);
         q *= ((factor_pb / h->param.rc.f_pb_factor) - 1.f) / 5.f + 1.f;
         rc->pb_factor_aq = 1.f - ((1.f - h->param.rc.f_aq_b_factor) * (factor_pb / h->param.rc.f_pb_factor));
-    }
-    else
+        factor_pb = (factor_pb + h->param.rc.f_pb_center) / 2.f;
+        rc->pb_factor_aq = (((-2.f) * (float)abs(n_bf - rc->bframes / 2.f - 0.5) * (factor_pb - h->param.rc.f_aq_b_factor)) / rc->bframes) + factor_pb;
+    } else {
+        n_bf = 0;
         rc->pb_factor_aq = h->param.rc.f_aq_b_factor;
+    }
     if ( h->param.rc.f_frameboost_reduce > 0 && (h->sh.i_type == SLICE_TYPE_B || h->sh.i_type == SLICE_TYPE_P) )
-		q *= 1.f + h->param.rc.f_frameboost_reduce - (h->param.rc.f_frameboost_reduce * ((float)rc->bframes / (float)h->param.i_bframe));
+        q *= 1.f + h->param.rc.f_frameboost_reduce - (h->param.rc.f_frameboost_reduce * ((float)rc->bframes / (float)h->param.i_bframe));
 
     q = x264_clip3f( q, h->param.rc.i_qp_min, h->param.rc.i_qp_max );
 
@@ -1840,7 +1844,7 @@ int x264_ratecontrol_mb_qp( x264_t *h )
     {
         /* MB-tree currently doesn't adjust quantizers in unreferenced frames. */
         float qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy];
-        if( h->sh.i_type == SLICE_TYPE_B && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
+        if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED && (h->sh.i_type == SLICE_TYPE_B || (h->param.rc.f_aq_b_factor < 1 && h->sh.i_type == SLICE_TYPE_I)) )
         {
             qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] - h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f - 1.f / h->rc->pb_factor_aq) : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f / h->param.rc.f_aq_b_factor);
         }

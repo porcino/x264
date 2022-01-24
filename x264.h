@@ -453,6 +453,7 @@ typedef struct x264_param_t
         float       f_pb_factor;
         float       f_pb_dynamic;
         float       f_pb_low;
+        float       f_pb_center;
 
         /* VBV filler: force CBR VBV and use filler bytes to ensure hard-CBR.
          * Implied by NAL-HRD CBR. */
