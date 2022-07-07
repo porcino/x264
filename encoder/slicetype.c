@@ -1038,10 +1038,11 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
     const float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
     const float drop_qty = h->param.rc.f_mb_tree_drop + (h->param.rc.f_mb_tree_low - h->param.rc.f_mb_tree_drop) * (1.f-qty);
     const float curve_qty = h->param.rc.f_mb_tree_curve + (h->param.rc.f_mb_curve_low - h->param.rc.f_mb_tree_curve) * (1.f-qty);
-    float strength = 5.0f * h->param.rc.f_mb_tree_strength;
+    float strength = 5.f * h->param.rc.f_mb_tree_strength;
+    double tree_sum = 0.0;
     for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
     {
-        float tree_avg = 0.0f;
+        float tree_avg = 0.0;
         int intra_cost = (frame->i_intra_cost[mb_index] * frame->i_inv_qscale_factor[mb_index] + 128) >> 8;
         if( intra_cost )
         {
@@ -1049,13 +1050,19 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
             float log2_ratio = x264_log2(intra_cost + propagate_cost) - x264_log2(intra_cost) + weightdelta;
             tree_avg = strength * log2_ratio;
             if( !IS_X264_TYPE_I( frame->i_type ) ) {
-				float curve = (-1.f) / (pow(curve_qty * 10.f, 2.f) * tree_avg + 1.f) + 1.f;
+                float curve = (-1.f) / (pow(curve_qty * 10.f, 2.f) * tree_avg + 1.f) + 1.f;
                 curve *= 1.f / (drop_qty * tree_avg + 1.f);
                 tree_avg *= curve;
             }
-            frame->f_qp_offset[mb_index] = frame->f_qp_offset_aq[mb_index] - (tree_avg + (tree_avg * (fabs(frame->avg_qp / 5.f) * h->param.rc.f_aq_adapt_tree)));
+            float tree_offset = tree_avg + (tree_avg * (fabs(frame->avg_qp / 5.f) * h->param.rc.f_aq_adapt_tree));
+            frame->f_qp_offset[mb_index] = frame->f_qp_offset_aq[mb_index] - tree_offset;
+            tree_sum -= tree_offset;
         }
     }
+    tree_sum /= h->mb.i_mb_count;
+    frame->f_qp_offset_tree = tree_sum;
+    for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
+        frame->f_qp_offset[mb_index] += tree_sum * h->param.rc.f_mb_tree_all;
 }
 
 

@@ -446,6 +446,8 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                         frame->f_qp_offset_aq_d[mb_xy] /= avg_qp_d_den;
                         if ( h->param.rc.f_aq_dark_adapt_qp > 0 || h->param.rc.f_aq_adapt_qp > 0)
                             frame->f_qp_offset_aq[mb_xy] += frame->avg_qp * h->param.rc.f_aq_adapt_qp + avg_qp_d * h->param.rc.f_aq_dark_adapt_qp;
+                        if( h->param.rc.b_mb_tree && h->param.rc.f_mb_tree_aq != 0 )
+                            frame->f_qp_offset_aq[mb_xy] /= 1.f + (frame->f_qp_offset_tree / QP_MAX * (10.f * h->param.rc.f_mb_tree_aq));
                     }
                 avg_qp_d_adapted /= h->mb.i_mb_count;
                 float bias_qty = 30 - qty * (30 - h->param.i_bframe_bias);

@@ -474,6 +474,8 @@ typedef struct x264_param_t
         float       f_frameboost_reduce;
         int         b_mb_tree;      /* Macroblock-tree ratecontrol. */
         float       f_mb_tree_curve;
+        float       f_mb_tree_psy;
+        float       f_mb_tree_aq;
         float       f_mb_curve_low;
         float       f_mb_tree_drop;
         float       f_mb_tree_low;
@@ -488,6 +490,7 @@ typedef struct x264_param_t
         /* 2pass params (same as ffmpeg ones) */
         float       f_qcompress;    /* 0.0 => cbr, 1.0 => constant qp */
         float       f_mb_tree_strength;
+        float       f_mb_tree_all;
         float       f_qblur;        /* temporally blur quants */
         float       f_complexity_blur; /* temporally blur complexity */
         x264_zone_t *zones;         /* ratecontrol overrides */

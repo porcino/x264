@@ -1134,6 +1134,9 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.rc.b_mb_tree = 0;
     }
     h->param.rc.f_mb_tree_strength = x264_clip3f( h->param.rc.f_mb_tree_strength, 0.0, 1.0 );
+    h->param.rc.f_mb_tree_all = x264_clip3f( h->param.rc.f_mb_tree_all, -5.0, 5.0 );
+    h->param.rc.f_mb_tree_psy = x264_clip3f( h->param.rc.f_mb_tree_psy, -9.0, 9.0 );
+    h->param.rc.f_mb_tree_aq = x264_clip3f( h->param.rc.f_mb_tree_aq, -9.0, 9.0 );
     if( b_open && h->param.rc.b_stat_read )
         h->param.rc.i_lookahead = 0;
 #if HAVE_THREAD
