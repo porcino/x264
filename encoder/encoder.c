@@ -943,7 +943,6 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.analyse.b_fast_pskip = 0;
         h->param.analyse.i_noise_reduction = 0;
         h->param.analyse.b_psy = 0;
-        h->param.analyse.i_psy_end = 39;
         h->param.i_bframe = 0;
         /* 8x8dct is not useful without RD in CAVLC lossless */
         if( !h->param.b_cabac && h->param.analyse.i_subpel_refine < 6 )
@@ -1134,6 +1133,7 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.rc.b_mb_tree = 0;
     }
     h->param.rc.f_mb_tree_strength = x264_clip3f( h->param.rc.f_mb_tree_strength, 0.0, 1.0 );
+    h->param.rc.f_mb_tree_kf = x264_clip3f( h->param.rc.f_mb_tree_kf, 0.0, 1.0 );
     h->param.rc.f_mb_tree_all = x264_clip3f( h->param.rc.f_mb_tree_all, -5.0, 5.0 );
     h->param.rc.f_mb_tree_psy = x264_clip3f( h->param.rc.f_mb_tree_psy, -9.0, 9.0 );
     h->param.rc.f_mb_tree_aq = x264_clip3f( h->param.rc.f_mb_tree_aq, -9.0, 9.0 );
@@ -1180,23 +1180,33 @@ static int validate_parameters( x264_t *h, int b_open )
         h->param.analyse.intra &= ~X264_ANALYSE_I8x8;
     }
     h->param.analyse.i_trellis = x264_clip3( h->param.analyse.i_trellis, 0, 2 );
-    h->param.analyse.i_psy_end = x264_clip3( h->param.analyse.i_psy_end, 10, 70 );
+    h->param.analyse.i_psy_end = x264_clip3( h->param.analyse.i_psy_end, 10, 69 );
+    h->param.analyse.f_dynamic_psy = x264_clip3f( h->param.analyse.f_dynamic_psy, 0.0, 1.0 );
+    h->param.analyse.i_dynamic_psy_aq = x264_clip3( h->param.analyse.i_dynamic_psy_aq, 0, 1 );
+    h->param.analyse.i_dynamic_psy_bf = x264_clip3( h->param.analyse.i_dynamic_psy_bf, 0, 1 );
+    h->param.analyse.i_dynamic_trellis = x264_clip3( h->param.analyse.i_dynamic_trellis, 0, 1 );
     h->param.rc.i_aq_mode = x264_clip3( h->param.rc.i_aq_mode, 0, 3 );
     h->param.rc.f_aq_strength = x264_clip3f( h->param.rc.f_aq_strength, 0, 3 );
     h->param.rc.f_aq_psy = x264_clip3f( h->param.rc.f_aq_psy, -9, 9 );
     h->param.rc.f_aq_psy_dark = x264_clip3f( h->param.rc.f_aq_psy_dark, -9, 9 );
     h->param.rc.f_aq_dark = x264_clip3f( h->param.rc.f_aq_dark, 0, 9 );
+    if (BIT_DEPTH > 8) {
+        h->param.analyse.i_psy_end = x264_clip3( h->param.analyse.i_psy_end*81/69, 10, 81 );
+        h->param.rc.f_aq_strength *= 1.08;
+        h->param.rc.f_aq_dark *= 1.08;
+    }
     h->param.rc.f_aq_adapt = x264_clip3f( h->param.rc.f_aq_adapt, 0, 9 );
     h->param.rc.f_aq_dark_adapt = x264_clip3f( h->param.rc.f_aq_dark_adapt, 0, 9 );
-    h->param.rc.f_aq_adapt_qp = x264_clip3f( h->param.rc.f_aq_adapt_qp, 0, 9 );
+    h->param.rc.f_aq_adapt_qp = x264_clip3f( h->param.rc.f_aq_adapt_qp, -9, 9 );
     h->param.rc.f_aq_adapt_tree = x264_clip3f( h->param.rc.f_aq_adapt_tree, -1, 1 );
-    h->param.rc.f_aq_dark_adapt_qp = x264_clip3f( h->param.rc.f_aq_dark_adapt_qp, 0, 9 );
+    h->param.rc.f_aq_dark_adapt_qp = x264_clip3f( h->param.rc.f_aq_dark_adapt_qp, -9, 9 );
     h->param.rc.f_aq_b_factor = x264_clip3f( h->param.rc.f_aq_b_factor, 0.01, 10.0 );
+    h->param.rc.f_pb_dark = x264_clip3f( h->param.rc.f_pb_dark, 0.01, 10.0 );
     h->param.rc.f_pb_dynamic = x264_clip3f( h->param.rc.f_pb_dynamic, 0, 9 );
     h->param.rc.f_pb_low = x264_clip3f( h->param.rc.f_pb_low, 0, 9 );
     h->param.rc.f_pb_center = x264_clip3f( h->param.rc.f_pb_center, 0, 9 );
     h->param.rc.f_frameboost = x264_clip3f( h->param.rc.f_frameboost, -1.0, 1.0 );
-    h->param.rc.f_frameboost_reduce = x264_clip3f( h->param.rc.f_frameboost_reduce, 0, 0.5 );
+    h->param.rc.f_frameboost_reduce = x264_clip3f( h->param.rc.f_frameboost_reduce, -0.5, 0.5 );
     h->param.rc.f_mb_curve_low = x264_clip3f( h->param.rc.f_mb_curve_low, 0.04, 1 );
     h->param.rc.f_mb_tree_curve = x264_clip3f( h->param.rc.f_mb_tree_curve, 0.04, 1 );
     h->param.rc.f_mb_tree_drop = x264_clip3f( h->param.rc.f_mb_tree_drop, 0, 100 );

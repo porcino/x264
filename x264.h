@@ -419,7 +419,10 @@ typedef struct x264_param_t
         float        f_psy_rd; /* Psy RD strength */
         float        f_psy_trellis; /* Psy trellis strength */
         int          b_psy; /* Toggle all psy optimizations */
-        int          i_dynamic_psy;
+        float        f_dynamic_psy;
+        int          i_dynamic_psy_aq;
+        int          i_dynamic_psy_bf;
+        int          i_dynamic_trellis;
         int          i_psy_end;
 
         int          b_mb_info;            /* Use input mb_info data in x264_picture_t */
@@ -470,6 +473,7 @@ typedef struct x264_param_t
         float       f_aq_adapt_tree;
         float       f_aq_dark_adapt_qp;
         float       f_aq_b_factor;
+        float       f_pb_dark;
         float       f_frameboost;
         float       f_frameboost_reduce;
         int         b_mb_tree;      /* Macroblock-tree ratecontrol. */
@@ -490,6 +494,7 @@ typedef struct x264_param_t
         /* 2pass params (same as ffmpeg ones) */
         float       f_qcompress;    /* 0.0 => cbr, 1.0 => constant qp */
         float       f_mb_tree_strength;
+        float       f_mb_tree_kf;
         float       f_mb_tree_all;
         float       f_qblur;        /* temporally blur quants */
         float       f_complexity_blur; /* temporally blur complexity */

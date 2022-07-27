@@ -447,7 +447,7 @@ void x264_adaptive_quant_frame( x264_t *h, x264_frame_t *frame, float *quant_off
                         if ( h->param.rc.f_aq_dark_adapt_qp > 0 || h->param.rc.f_aq_adapt_qp > 0)
                             frame->f_qp_offset_aq[mb_xy] += frame->avg_qp * h->param.rc.f_aq_adapt_qp + avg_qp_d * h->param.rc.f_aq_dark_adapt_qp;
                         if( h->param.rc.b_mb_tree && h->param.rc.f_mb_tree_aq != 0 )
-                            frame->f_qp_offset_aq[mb_xy] /= 1.f + (frame->f_qp_offset_tree / QP_MAX * (10.f * h->param.rc.f_mb_tree_aq));
+                            frame->f_qp_offset_aq[mb_xy] /= 1.f + (frame->f_qp_offset_tree / QP_MAX * (10.f * (h->param.rc.f_mb_tree_aq > 0 ? h->param.rc.f_mb_tree_aq / 10.f : h->param.rc.f_mb_tree_aq)));
                     }
                 avg_qp_d_adapted /= h->mb.i_mb_count;
                 float bias_qty = 30 - qty * (30 - h->param.i_bframe_bias);
@@ -1848,7 +1848,7 @@ int x264_ratecontrol_mb_qp( x264_t *h )
         float qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy];
         if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED && (h->sh.i_type == SLICE_TYPE_B || (h->param.rc.f_aq_b_factor < 1 && h->sh.i_type == SLICE_TYPE_I)) )
         {
-            qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] - h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f - 1.f / h->rc->pb_factor_aq) : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f / h->param.rc.f_aq_b_factor);
+            qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] - h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f - 1.f / h->rc->pb_factor_aq) - h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * (1.f - 1.f / h->param.rc.f_pb_dark) : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f / h->param.rc.f_aq_b_factor) - h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * (1.f - 1.f / h->param.rc.f_pb_dark);
         }
         /* Scale AQ's effect towards zero in emergency mode. */
         if( qp > QP_MAX_SPEC )
@@ -2707,7 +2707,7 @@ static float rate_estimate_qscale( x264_t *h )
                 /* should test _next_ pict type, but that isn't decided yet */
                 && rcc->last_non_b_pict_type != SLICE_TYPE_I )
             {
-                q = qp2qscale( rcc->accum_p_qp / rcc->accum_p_norm );
+                q = rcc->last_qscale_for[SLICE_TYPE_P];
                 q /= h->param.rc.f_ip_factor;
             }
             else if( h->i_frame > 0 )

@@ -133,6 +133,7 @@ typedef struct x264_frame
     float   *f_qp_offset_aq;
     float   *f_qp_offset_aq_d;
     float   *f_qp_offset_aq_s;
+    float   *f_qp_offset_mbtree;
     float   f_qp_offset_tree;
     int     b_intra_calculated;
     uint16_t *i_intra_cost;

@@ -1038,7 +1038,7 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
     const float qty = h->fdec->quality > 0 ? h->fdec->quality : 1.f;
     const float drop_qty = h->param.rc.f_mb_tree_drop + (h->param.rc.f_mb_tree_low - h->param.rc.f_mb_tree_drop) * (1.f-qty);
     const float curve_qty = h->param.rc.f_mb_tree_curve + (h->param.rc.f_mb_curve_low - h->param.rc.f_mb_tree_curve) * (1.f-qty);
-    float strength = 5.f * h->param.rc.f_mb_tree_strength;
+    float strength = 5.f * (IS_X264_TYPE_I(frame->i_type) ? h->param.rc.f_mb_tree_kf : h->param.rc.f_mb_tree_strength);
     double tree_sum = 0.0;
     for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
     {
@@ -1057,12 +1057,14 @@ static void macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float averag
             float tree_offset = tree_avg + (tree_avg * (fabs(frame->avg_qp / 5.f) * h->param.rc.f_aq_adapt_tree));
             frame->f_qp_offset[mb_index] = frame->f_qp_offset_aq[mb_index] - tree_offset;
             tree_sum -= tree_offset;
+            frame->f_qp_offset_mbtree[mb_index] = tree_offset;
         }
     }
     tree_sum /= h->mb.i_mb_count;
     frame->f_qp_offset_tree = tree_sum;
-    for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
-        frame->f_qp_offset[mb_index] += tree_sum * h->param.rc.f_mb_tree_all;
+    if( !IS_X264_TYPE_I( frame->i_type ) )
+        for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
+            frame->f_qp_offset[mb_index] += tree_sum * h->param.rc.f_mb_tree_all;
 }
 
 

@@ -141,32 +141,24 @@ static inline int ssd_plane( x264_t *h, int size, int p, int x, int y )
             int dc = h->pixf.sad[size]( fdec, FDEC_STRIDE, (pixel*)x264_zero, 0 ) >> 1;
             satd = abs(h->pixf.satd[size]( fdec, FDEC_STRIDE, (pixel*)x264_zero, 0 ) - dc - cached_satd( h, size, x, y ));
         }
-        if( h->param.analyse.i_dynamic_psy > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
+        float psy_const = 1.f;
+        if( h->param.analyse.f_dynamic_psy > 0 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
         {
-            float psy_const = 1.f;
-            float limit_psy = 0;
-            if( h->param.analyse.i_dynamic_psy > 1 && h->param.analyse.i_dynamic_psy != 3 && h->param.analyse.i_dynamic_psy < 11)
-            {
-                psy_const = h->param.analyse.i_psy_end - (h->param.analyse.i_psy_end / 9.f);
-                psy_const = pow(((x264_ratecontrol_qp(h) + h->fenc->f_qp_offset[h->mb.i_mb_xy]) - psy_const / 7.f) / psy_const, 4.f) * (-1.f) + 1.f;
-            }
-            if( h->param.analyse.i_dynamic_psy > 4 && h->param.analyse.i_dynamic_psy < 12 )
-                limit_psy = 1.f - ((h->param.analyse.i_dynamic_psy < 10 ? h->param.analyse.i_dynamic_psy : 8) - 4) * 0.2;
-            if ( h->param.analyse.i_dynamic_psy >= 9 && h->sh.i_type == SLICE_TYPE_B )
-                psy_const /= h->param.rc.f_pb_factor * 2.f;
-            psy_const = psy_const < limit_psy ? limit_psy : psy_const;
+            psy_const = h->param.analyse.i_psy_end - (h->param.analyse.i_psy_end / 9.f);
+            psy_const = pow(((x264_ratecontrol_qp(h) + h->fenc->f_qp_offset[h->mb.i_mb_xy]) - psy_const / 7.f) / psy_const, 4.f) * (-1.f) + 1.f;
+            psy_const = psy_const < h->param.analyse.f_dynamic_psy ? h->param.analyse.f_dynamic_psy : psy_const;
+        }
+        if ( h->param.analyse.i_dynamic_psy_bf == 1 && h->sh.i_type == SLICE_TYPE_B )
+            psy_const /= h->param.rc.f_pb_factor * 2.f;
+        if ( h->param.analyse.i_dynamic_psy_aq == 1 && h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED )
             psy_const = psy_const - (psy_const * (h->fenc->f_qp_offset_aq_s[h->mb.i_mb_xy] * (h->param.rc.f_aq_psy / 10.f))) - (psy_const * (h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * h->param.rc.f_aq_psy_dark));
-            if( h->param.rc.b_mb_tree && h->param.rc.f_mb_tree_psy != 0 )
-                psy_const -= psy_const * (h->fenc->f_qp_offset_tree * h->param.rc.f_mb_tree_psy);
-            if( psy_const < 0 )
-                psy_const = 0;
-            satd = (int32_t)(satd * h->mb.i_psy_rd * psy_const * h->mb.i_psy_rd_lambda + 128) >> 8;
-        }
-        else
-        {
-            int64_t tmp = ((int64_t)satd * h->mb.i_psy_rd * h->mb.i_psy_rd_lambda + 128) >> 8;
-            satd = X264_MIN( tmp, COST_MAX );
-        }
+        if( h->param.rc.b_mb_tree && h->param.rc.f_mb_tree_psy != 0 )
+            psy_const += psy_const * (h->fenc->f_qp_offset_mbtree[h->mb.i_mb_xy] * h->param.rc.f_mb_tree_psy);
+        if( psy_const < 0 )
+            psy_const = 0;
+        
+        int64_t tmp = (int32_t)((int64_t)satd * h->mb.i_psy_rd * psy_const * h->mb.i_psy_rd_lambda + 128) >> 8;
+        satd = X264_MIN( tmp, COST_MAX );
     }
     return h->pixf.ssd[size](fenc, FENC_STRIDE, fdec, FDEC_STRIDE) + satd;
 }
@@ -736,7 +728,7 @@ int quant_trellis_cabac( x264_t *h, dctcoef *dct,
     memcpy( &level_state1, cabac_state+8, sizeof(uint16_t) );
 #define TRELLIS_ARGS unquant_mf, zigzag, lambda2, last_nnz, orig_coefs, quant_coefs, dct,\
                      cabac_state_sig, cabac_state_last, level_state0, level_state1
-    float dynamic_psy_ratio = h->param.analyse.i_dynamic_psy > 2 && h->param.analyse.i_dynamic_psy < 5 ? 300 / (pow((x264_ratecontrol_qp( h ) - 20) / 3, 4) + 300) : 1.f;
+    float dynamic_psy_ratio = h->param.analyse.i_dynamic_trellis == 1 ? 300 / (pow((x264_ratecontrol_qp( h ) - 20) / 3, 4) + 300) : 1.f;
     if( num_coefs == 16 && !dc )
         if( b_chroma || !h->mb.i_psy_trellis )
             return h->quantf.trellis_cabac_4x4( TRELLIS_ARGS, b_ac );
