@@ -1,7 +1,7 @@
 /*****************************************************************************
  * base.c: misc common functions (bit depth independent)
  *****************************************************************************
- * Copyright (C) 2003-2021 x264 project
+ * Copyright (C) 2003-2022 x264 project
  *
  * Authors: Loren Merritt <lorenm@u.washington.edu>
  *          Laurent Aimar <fenrir@via.ecp.fr>
@@ -410,13 +410,13 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.i_qp_max = INT_MAX;
     param->rc.i_qp_step = 4;
     param->rc.f_ip_factor = 1.0;
-    param->rc.f_pb_factor = 0.9;
+    param->rc.f_pb_factor = 1.1;
     param->rc.f_pb_dynamic = 1.4;
-    param->rc.f_pb_center = 0.7;
-    param->rc.f_pb_low = 1.0;
+    param->rc.f_pb_center = 0.8;
+    param->rc.f_pb_low = 1.7;
     param->rc.i_aq_mode = X264_AQ_AUTOVARIANCE_BIASED;
     param->rc.f_aq_strength = 1.7;
-    param->rc.f_aq_psy = 0.1;
+    param->rc.f_aq_psy = 0.05;
     param->rc.f_aq_psy_dark = 0.1;
     param->rc.f_aq_dark = 1.0;
     param->rc.f_aq_adapt = 0.5;
@@ -424,8 +424,8 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_aq_dark_adapt = 0.1;
     param->rc.f_aq_dark_adapt_qp = -2.0;
     param->rc.f_aq_adapt_tree = 0.6;
-    param->rc.f_aq_b_factor = 1.3;
-	param->rc.f_pb_dark = 0.5;
+    param->rc.f_aq_b_factor = 1.2;
+	param->rc.f_pb_dark = 0.9;
     param->rc.f_frameboost = 0.1;
     param->rc.f_frameboost_reduce = 0.02;
     param->rc.i_lookahead = 48;

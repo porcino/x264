@@ -1,7 +1,7 @@
 /*****************************************************************************
  * ratecontrol.c: ratecontrol
  *****************************************************************************
- * Copyright (C) 2005-2021 x264 project
+ * Copyright (C) 2005-2022 x264 project
  *
  * Authors: Loren Merritt <lorenm@u.washington.edu>
  *          Michael Niedermayer <michaelni@gmx.at>
@@ -1848,7 +1848,7 @@ int x264_ratecontrol_mb_qp( x264_t *h )
         float qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy];
         if( h->param.rc.i_aq_mode == X264_AQ_AUTOVARIANCE_BIASED && (h->sh.i_type == SLICE_TYPE_B || (h->param.rc.f_aq_b_factor < 1 && h->sh.i_type == SLICE_TYPE_I)) )
         {
-            qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] - h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f - 1.f / h->rc->pb_factor_aq) - h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * (1.f - 1.f / h->param.rc.f_pb_dark) : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f / h->param.rc.f_aq_b_factor) - h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * (1.f - 1.f / h->param.rc.f_pb_dark);
+            qp_offset = h->fdec->b_kept_as_ref ? h->fenc->f_qp_offset[h->mb.i_mb_xy] - h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f - 1.f / h->rc->pb_factor_aq) - h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * (1.f - 1.f / h->param.rc.f_pb_dark) : h->fenc->f_qp_offset_aq[h->mb.i_mb_xy] * (1.f / h->rc->pb_factor_aq) - h->fenc->f_qp_offset_aq_d[h->mb.i_mb_xy] * (1.f - 1.f / h->param.rc.f_pb_dark);
         }
         /* Scale AQ's effect towards zero in emergency mode. */
         if( qp > QP_MAX_SPEC )
