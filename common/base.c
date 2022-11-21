@@ -35,6 +35,8 @@
 #include <sys/mman.h>
 #endif
 
+#define X264_ISDIGIT(x) isdigit((unsigned char)(x))
+
 /****************************************************************************
  * x264_reduce_fraction:
  ****************************************************************************/
@@ -542,6 +544,7 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_weighted_pred = X264_WEIGHTP_NONE;
         param->analyse.b_weighted_bipred = 0;
         param->rc.i_lookahead = 0;
+		param->analyse.i_me_range = 16;
     }
     else if( !strcasecmp( preset, "superfast" ) )
     {
@@ -554,6 +557,8 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->rc.b_mb_tree = 0;
         param->analyse.i_weighted_pred = X264_WEIGHTP_SIMPLE;
         param->rc.i_lookahead = 0;
+		param->analyse.i_me_range = 16;
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST
     }
     else if( !strcasecmp( preset, "veryfast" ) )
     {
@@ -563,6 +568,8 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_trellis = 0;
         param->analyse.i_weighted_pred = X264_WEIGHTP_SIMPLE;
         param->rc.i_lookahead = 10;
+		param->analyse.i_me_range = 16;
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST
     }
     else if( !strcasecmp( preset, "faster" ) )
     {
@@ -571,6 +578,8 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_subpel_refine = 4;
         param->analyse.i_weighted_pred = X264_WEIGHTP_SIMPLE;
         param->rc.i_lookahead = 20;
+		param->analyse.i_me_range = 16;
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST
     }
     else if( !strcasecmp( preset, "fast" ) )
     {
@@ -578,10 +587,18 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_subpel_refine = 6;
         param->analyse.i_weighted_pred = X264_WEIGHTP_SIMPLE;
         param->rc.i_lookahead = 30;
+		param->analyse.i_me_range = 32;
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST
     }
     else if( !strcasecmp( preset, "medium" ) )
     {
-        /* Default is medium */
+        param->analyse.i_subpel_refine = 7;
+        param->i_frame_reference = 4;
+        param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
+        param->analyse.i_trellis = 2;
+        param->rc.i_lookahead = 50;
+		param->analyse.i_me_range = 64;
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST
     }
     else if( !strcasecmp( preset, "slow" ) )
     {
@@ -590,12 +607,13 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
         param->analyse.i_trellis = 2;
         param->rc.i_lookahead = 50;
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST
     }
     else if( !strcasecmp( preset, "slower" ) )
     {
         param->analyse.i_me_method = X264_ME_UMH;
         param->analyse.i_subpel_refine = 9;
-        param->i_frame_reference = 8;
+        param->i_frame_reference = 6;
         param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
         param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
         param->analyse.inter |= X264_ANALYSE_PSUB8x8;
@@ -606,13 +624,11 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
     {
         param->analyse.i_me_method = X264_ME_UMH;
         param->analyse.i_subpel_refine = 10;
-        param->analyse.i_me_range = 24;
-        param->i_frame_reference = 16;
+        param->i_frame_reference = 7;
         param->i_bframe_adaptive = X264_B_ADAPT_TRELLIS;
         param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
         param->analyse.inter |= X264_ANALYSE_PSUB8x8;
         param->analyse.i_trellis = 2;
-        param->i_bframe = 8;
         param->rc.i_lookahead = 60;
     }
     else if( !strcasecmp( preset, "placebo" ) )
@@ -948,7 +964,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     if( 0 );
     OPT("asm")
     {
-        p->cpu = isdigit(value[0]) ? (uint32_t)atoi(value) :
+        p->cpu = X264_ISDIGIT(value[0]) ? (uint32_t)atoi(value) :
                  !strcasecmp(value, "auto") || atobool(value) ? x264_cpu_detect() : 0;
         if( b_error )
         {
@@ -1019,8 +1035,8 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         b_error |= parse_enum( value, x264_avcintra_flavor_names, &p->i_avcintra_flavor );
     OPT("sar")
     {
-        b_error = ( 2 != sscanf( value, "%d:%d", &p->vui.i_sar_width, &p->vui.i_sar_height ) &&
-                    2 != sscanf( value, "%d/%d", &p->vui.i_sar_width, &p->vui.i_sar_height ) );
+        b_error |= ( 2 != sscanf( value, "%d:%d", &p->vui.i_sar_width, &p->vui.i_sar_height ) &&
+                     2 != sscanf( value, "%d/%d", &p->vui.i_sar_width, &p->vui.i_sar_height ) );
     }
     OPT("overscan")
         b_error |= parse_enum( value, x264_overscan_names, &p->vui.i_overscan );
@@ -1037,7 +1053,7 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
     OPT("chromaloc")
     {
         p->vui.i_chroma_loc = atoi(value);
-        b_error = ( p->vui.i_chroma_loc < 0 || p->vui.i_chroma_loc > 5 );
+        b_error |= ( p->vui.i_chroma_loc < 0 || p->vui.i_chroma_loc > 5 );
     }
     OPT("mastering-display")
     {
@@ -1069,10 +1085,20 @@ REALIGN_STACK int x264_param_parse( x264_param_t *p, const char *name, const cha
         b_error |= parse_enum( value, x264_transfer_names, &p->i_alternative_transfer );
     OPT("fps")
     {
-        if( sscanf( value, "%u/%u", &p->i_fps_num, &p->i_fps_den ) != 2 )
+        int64_t i_fps_num;
+        int64_t i_fps_den;
+        if( sscanf( value, "%"SCNd64"/%"SCNd64, &i_fps_num, &i_fps_den ) == 2 )
+        {
+            p->i_fps_num = i_fps_num;
+            p->i_fps_den = i_fps_den;
+            b_error |= i_fps_num < 1 || i_fps_num > UINT32_MAX || i_fps_den < 1 || i_fps_den > UINT32_MAX;
+        }
+        else
         {
             double fps = atof(value);
-            if( fps > 0.0 && fps <= INT_MAX/1000.0 )
+            if( fps < 0.0005 || fps > INT_MAX )
+                b_error = 1;
+            else if( fps <= INT_MAX/1000.0 )
             {
                 p->i_fps_num = (int)(fps * 1000.0 + .5);
                 p->i_fps_den = 1000;
