@@ -558,7 +558,7 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_weighted_pred = X264_WEIGHTP_SIMPLE;
         param->rc.i_lookahead = 0;
 		param->analyse.i_me_range = 16;
-		param->i_bframe_adaptive = X264_B_ADAPT_FAST
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST;
     }
     else if( !strcasecmp( preset, "veryfast" ) )
     {
@@ -569,7 +569,7 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_weighted_pred = X264_WEIGHTP_SIMPLE;
         param->rc.i_lookahead = 10;
 		param->analyse.i_me_range = 16;
-		param->i_bframe_adaptive = X264_B_ADAPT_FAST
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST;
     }
     else if( !strcasecmp( preset, "faster" ) )
     {
@@ -579,7 +579,7 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_weighted_pred = X264_WEIGHTP_SIMPLE;
         param->rc.i_lookahead = 20;
 		param->analyse.i_me_range = 16;
-		param->i_bframe_adaptive = X264_B_ADAPT_FAST
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST;
     }
     else if( !strcasecmp( preset, "fast" ) )
     {
@@ -588,7 +588,7 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_weighted_pred = X264_WEIGHTP_SIMPLE;
         param->rc.i_lookahead = 30;
 		param->analyse.i_me_range = 32;
-		param->i_bframe_adaptive = X264_B_ADAPT_FAST
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST;
     }
     else if( !strcasecmp( preset, "medium" ) )
     {
@@ -598,7 +598,7 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_trellis = 2;
         param->rc.i_lookahead = 50;
 		param->analyse.i_me_range = 64;
-		param->i_bframe_adaptive = X264_B_ADAPT_FAST
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST;
     }
     else if( !strcasecmp( preset, "slow" ) )
     {
@@ -607,7 +607,7 @@ static int param_apply_preset( x264_param_t *param, const char *preset )
         param->analyse.i_direct_mv_pred = X264_DIRECT_PRED_AUTO;
         param->analyse.i_trellis = 2;
         param->rc.i_lookahead = 50;
-		param->i_bframe_adaptive = X264_B_ADAPT_FAST
+		param->i_bframe_adaptive = X264_B_ADAPT_FAST;
     }
     else if( !strcasecmp( preset, "slower" ) )
     {
