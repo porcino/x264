@@ -241,7 +241,7 @@ static int list_contains( const char * const *list, const char *s )
 static void suggest( const char *s, const char *cur, int cur_len )
 {
     if( s && *s && !strncmp( s, cur, cur_len ) )
-        printf( "%s\n", s );
+        printf( "%s ", s );
 }
 
 static void suggest_lower( const char *s, const char *cur, int cur_len )
@@ -250,7 +250,7 @@ static void suggest_lower( const char *s, const char *cur, int cur_len )
     {
         for( ; *s; s++ )
             putchar( *s < 'A' || *s > 'Z' ? *s : *s | 0x20 );
-        putchar( '\n' );
+        putchar( ' ' );
     }
 }
 
@@ -274,7 +274,7 @@ static void suggest_token( const char *s, int delim, const char *cur, int cur_le
         {
             int tok_len = tok_end - s;
             if( tok_len && tok_len >= cur_len && !strncmp( s, cur, cur_len ) )
-                printf( "%.*s\n", tok_len, s );
+                printf( "%.*s ", tok_len, s );
         }
         suggest( s, cur, cur_len );
     }
@@ -404,5 +404,6 @@ int x264_cli_autocomplete( const char *prev, const char *cur )
             suggest_list( opts_special );
     }
 
+    putchar( '\n' );
     return 0;
 }
