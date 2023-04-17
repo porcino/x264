@@ -1,7 +1,7 @@
 /*****************************************************************************
  * base.c: misc common functions (bit depth independent)
  *****************************************************************************
- * Copyright (C) 2003-2022 x264 project
+ * Copyright (C) 2003-2023 x264 project
  *
  * Authors: Loren Merritt <lorenm@u.washington.edu>
  *          Laurent Aimar <fenrir@via.ecp.fr>
@@ -448,7 +448,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->rc.f_mb_tree_aq = -2;
     param->rc.f_mb_tree_curve = 0.05;
     param->rc.f_mb_tree_drop = 0.01;
-    param->rc.f_mb_curve_low = 1;
+    param->rc.f_mb_curve_low = 0.15;
     param->rc.f_mb_tree_low = 0;
 
     /* Log */
@@ -464,7 +464,7 @@ REALIGN_STACK void x264_param_default( x264_param_t *param )
     param->analyse.i_me_method = X264_ME_UMH;
     param->analyse.f_psy_rd = 0.35;
     param->analyse.b_psy = 1;
-    param->analyse.f_dynamic_psy = 0.7;
+    param->analyse.f_dynamic_psy = 0.6;
     param->analyse.i_dynamic_psy_aq = 1;
     param->analyse.i_dynamic_psy_bf = 1;
     param->analyse.i_dynamic_trellis = 1;
